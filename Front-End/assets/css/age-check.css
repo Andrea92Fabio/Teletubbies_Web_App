@@ -1,0 +1,69 @@
+body:has(#view-age-check.active) {
+    height: 100svh;
+    width: 100svw;
+    overflow: hidden;
+}
+
+#view-age-check {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 9999;
+}
+
+#view-age-check.active {
+    display: block;
+}
+
+.form {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.date-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+#age-check-birthdate {
+    font-size: 2rem;
+}
+
+label[for='age-check-birthdate'] {
+    font-size: 1.5rem;
+    padding-inline: 1.5em;
+}
+
+.form-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--clr-main-100);
+    border-radius: 4rem;
+    min-height: 60vh;
+    min-width: 70vw;
+    z-index: 1;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+
+    backdrop-filter: blur(30px);
+    z-index: -1;
+}
+
+@media screen and (max-width: 1000px) {
+    .form-content {
+        width: 90vw;
+    }
+
+    #age-check-birthdate {
+        margin-inline: auto;
+        width: 85%;
+        font-size: 1.5rem;
+    }
+}

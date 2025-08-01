@@ -1,0 +1,68 @@
+.form-hero {
+    position: relative;
+    min-height: 70vh;
+    display: grid;
+    color: var(--clr-main-100);
+    background-image: url(/assets/img/form.webp);
+    background-size: cover;
+    background-position: center bottom;
+    place-items: center;
+    padding-inline: var(--len-lg);
+    z-index: 1;
+}
+
+.form-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+        var(--clr-main-800),
+        var(--clr-main-800) 60%,
+        transparent 80%,
+        transparent
+    );
+    opacity: 0.4;
+}
+
+.main-form {
+    padding-block-start: var(--len-xl);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--len-md);
+
+    a {
+        color: var(--clr-main-700);
+        text-decoration: underline;
+        &:hover {
+            color: var(--clr-main-600);
+        }
+    }
+}
+
+.form-input-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-wrapper {
+    color: var(--clr-main-800);
+    a {
+        text-decoration: underline;
+    }
+}
+
+.main-form .cta,
+#generic-error-target {
+    align-self: self-end;
+}
+
+@media screen and (width < 1000px) {
+    .form-hero {
+        min-height: 20rem;
+    }
+    .main-form {
+        grid-template-columns: 1fr;
+    }
+    #generic-error-target {
+        grid-row: 20;
+    }
+}

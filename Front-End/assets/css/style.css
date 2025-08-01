@@ -1,0 +1,264 @@
+:root {
+    --clr-main-100: #ffd9ce;
+    --clr-main-200: #ffbfad;
+    --clr-main-300: #ff9b7a;
+    --clr-main-400: #ff5024;
+    --clr-main-500: #cc3f1d;
+    --clr-main-600: #992f16;
+    --clr-main-700: #6b200f;
+    --clr-main-800: #361008;
+
+    --clr-success-200: #c3ecb8;
+    --clr-success-400: #39d40f;
+    --clr-success-600: #15380c;
+
+    --clr-error-200: #ffaeb8;
+    --clr-error-400: #ce001b;
+    --clr-error-600: #570a14;
+
+    /* lenght variables to use in helper classes like gap-md */
+    --len-xl: clamp(3.5rem, 2.9286rem + 2.2857vw, 4.5rem);
+    --len-lg: clamp(2rem, 1.4286rem + 2.2857vw, 3rem);
+    --len-md: clamp(1.625rem, 1.4107rem + 0.8571vw, 2rem);
+    --len-sm: clamp(1.125rem, 1.0536rem + 0.2857vw, 1.25rem);
+    --len-xs: 0.875rem;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.z-10 {
+    position: relative;
+    z-index: 10;
+}
+
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    min-height: 100vh;
+    min-height: 100svh;
+}
+
+body {
+    overflow-y: hidden;
+}
+
+.container {
+    width: min(90%, 1200px);
+    margin: 0 auto;
+}
+
+img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+a {
+    text-decoration: none;
+}
+
+.text-clr-800 {
+    color: var(--clr-main-800);
+}
+.text-clr-700 {
+    color: var(--clr-main-700);
+}
+.text-clr-200 {
+    color: var(--clr-main-200);
+}
+.text-clr-100 {
+    color: var(--clr-main-100);
+}
+
+.bg-color-100 {
+    background: var(--clr-main-100);
+}
+.bg-color-200 {
+    background: var(--clr-main-200);
+}
+
+.text {
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: normal;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.label {
+    padding-inline-start: 1em;
+}
+
+.input:not(#age-check-birthdate) {
+    height: 2.5rem;
+}
+
+.input {
+    width: auto;
+    font-weight: 500;
+    padding: 0.75em 1em;
+    background-color: var(--clr-main-200);
+    color: var(--clr-main-800);
+    border-radius: 900px;
+    border: solid 2px;
+}
+
+.input::placeholder {
+    color: var(--clr-main-800);
+    opacity: 0.6;
+}
+
+.input[type='date'] {
+    text-align-last: left;
+}
+
+.error .input {
+    background-color: var(--clr-error-200);
+    color: var(--clr-error-600);
+}
+
+.error .label,
+.errors-target {
+    color: var(--clr-error-400);
+}
+
+.success .input {
+    background-color: var(--clr-success-200);
+    color: var(--clr-success-600);
+}
+
+.success .label {
+    color: var(--clr-success-400);
+}
+
+.lab-button {
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.25ch;
+}
+
+/* website used to calculate: https://clamp.font-size.app/ */
+/* 400px to 1100px */
+
+.title-900 {
+    font-size: clamp(2.75rem, 2.0357rem + 2.8571vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -0.02ch;
+    line-height: 0.85;
+}
+
+.title-700 {
+    font-size: clamp(2rem, 1.4286rem + 2.2857vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.02ch;
+    line-height: 0.9;
+}
+
+.title-500 {
+    font-size: clamp(1.75rem, 1.6071rem + 0.5714vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.01ch;
+    line-height: 1;
+}
+.title-300 {
+    font-size: clamp(1.25rem, 1.1071rem + 0.5714vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.2;
+}
+.title-100 {
+    font-size: clamp(1.125rem, 1.0536rem + 0.2857vw, 1.25rem);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* We should mainly use margin top to add spacing. 
+We can use gap most of the times if using grid or flex in a layout*/
+.mt-xl {
+    margin-block-start: var(--len-xl);
+}
+
+.mt-lg {
+    margin-block-start: var(--len-lg);
+}
+
+.mt-md {
+    margin-block-start: var(--len-md);
+}
+
+.mt-sm {
+    margin-block-start: var(--len-sm);
+}
+
+.mt-xs {
+    margin-block-start: var(--len-xs);
+}
+
+.py-lg {
+    padding-block: var(--len-lg);
+}
+
+.pb-lg {
+    padding-block-end: var(--len-lg);
+}
+
+.gap-xl {
+    gap: var(--len-xl);
+}
+
+.gap-lg {
+    gap: var(--len-lg);
+}
+
+.gap-md {
+    gap: var(--len-md);
+}
+
+.gap-sm {
+    gap: var(--len-sm);
+}
+
+.grid {
+    display: grid;
+}
+
+.grid-two-cols {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+
+.view {
+    display: none;
+}
+.view.active {
+    display: block;
+}
+
+@media screen and (width < 1000px) {
+    .grid-two-cols {
+        grid-template-columns: 1fr;
+    }
+}

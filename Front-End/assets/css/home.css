@@ -1,0 +1,155 @@
+.hero {
+    background-image: url('./../img/teletubbies.jpeg');
+    background-size: cover;
+    background-position: center;
+    min-height: 80vh;
+    display: flex;
+    padding-inline: 1rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero {
+    position: relative;
+}
+
+h1 {
+    color: var(--clr-main-400);
+}
+
+.hero::before {
+    content: '';
+    background: var(--clr-main-800);
+    opacity: 0.4;
+    position: absolute;
+    inset: 0;
+}
+
+.hero > * {
+    z-index: 1;
+}
+
+.cta {
+    cursor: pointer;
+    background-color: var(--clr-main-400);
+    color: var(--clr-main-800);
+    transition: all 300ms;
+
+    border: none;
+    border-radius: 10rem;
+
+    padding: 1rem 2rem;
+}
+
+.cta:hover {
+    background-color: var(--clr-main-700);
+    color: var(--clr-main-100);
+}
+
+.grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+}
+
+.card-wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.fade-in-left {
+    translate: -50px 0px;
+    opacity: 0;
+    transition: all 300ms ease-in-out;
+}
+
+.fade-in-top {
+    translate: 0px -50px;
+    opacity: 0;
+    transition: all 300ms ease-in-out;
+}
+
+.fade-in-bottom {
+    translate: 0px 50px;
+    opacity: 0;
+    transition: all 300ms ease-in-out;
+}
+
+.fade-in-right {
+    translate: 50px 0px;
+    opacity: 0;
+    transition: all 300ms ease-in-out;
+}
+
+.card {
+    --stagger: 0ms;
+    padding: 2rem;
+    background-color: var(--clr-main-400);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    translate: -50px 0px;
+    opacity: 0;
+    transition:
+        transform 300ms ease-in-out,
+        translate 300ms ease-in-out var(--stagger),
+        opacity 300ms ease-in-out var(--stagger);
+}
+
+.card:nth-of-type(2) {
+    --stagger: 100ms;
+}
+.card:nth-of-type(3) {
+    --stagger: 200ms;
+}
+
+.show {
+    translate: 0px 0px;
+    opacity: 1;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card img {
+    border-radius: 50%;
+}
+
+/* remove this */
+.card p {
+    text-align: center;
+    font-size: 2.5rem;
+}
+
+@media screen and (width < 1000px) {
+    .rules-1 {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-2-col,
+    .card-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .card:nth-of-type(2),
+    .card:nth-of-type(3) {
+        --stagger: 0ms;
+    }
+
+    /* this fixes the mobile issue */
+    .fade-in-bottom {
+        translate: 0px -50px;
+        opacity: 0;
+    }
+
+    .show {
+        translate: 0px 0px;
+        opacity: 1;
+    }
+    .hero {
+        min-height: 20rem;
+    }
+}

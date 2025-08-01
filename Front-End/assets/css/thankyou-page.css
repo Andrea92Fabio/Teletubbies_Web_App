@@ -1,0 +1,28 @@
+.main-thank-you,
+.main-form-error {
+    background-image: url('../img/form_and_thank_you.webp');
+    display: flex;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    min-height: 100svh;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.main-thank-you > .container,
+.main-form-error > .container {
+    z-index: 1;
+    text-align: center;
+    text-wrap: pretty;
+}
+
+.thank-you-overlay,
+.form-error-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--clr-main-800);
+    opacity: 0.5;
+}
