@@ -6,9 +6,7 @@ const wrapper = document.querySelector('#result-wrapper');
 displayResult(await getResultFromServer(tokenId));
 
 async function getResultFromServer(tokenId) {
-    const response = await fetch(
-        `http://192.168.100.33:80/api/confirmation/${tokenId}`
-    );
+    const response = await fetch(`/api/confirmation/${tokenId}`);
 
     const retvalue = await response.json();
     console.log(retvalue.message);

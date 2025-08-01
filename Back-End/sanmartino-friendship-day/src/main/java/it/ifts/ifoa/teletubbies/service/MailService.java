@@ -8,10 +8,13 @@ import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 
 public class MailService {
-    static final String SENDER_EMAIL = "teletubbies.pw@gmail.com"; 
+    static final String SENDER_EMAIL = System.getenv("SMTP_USER");
+
     private static Session mailSetter(){
-        final String password = "rzmw gkis qngy magn";
-        
+        final String password = System.getenv("SMTP_PASSWORD");
+        final String sender = System.getenv("SMTP_USER");
+        String baseUrl = System.getenv("BASE_URL");
+
         String host = "smtp.gmail.com";
         int port = 587;
         Properties props = new Properties();
@@ -25,16 +28,16 @@ public class MailService {
                 return new PasswordAuthentication(SENDER_EMAIL, password);
             }
         });
-        
-        return session;
 
+        return session;
     }
 
-    public static void sendEmail(String receiver, String tokedId, SubmissionStatus status) {
+    public static void sendEmail(String receiver, String tokenId, SubmissionStatus status) {
         Session session = mailSetter();
+        String baseUrl = System.getenv("BASE_URL");
 
         String subject = "Iscrizione concorso Teletubbies x San Martino";
-        String address = "http://192.168.100.48:8080/result/index.html?tokenId="+tokedId;
+        String address = baseUrl + "/result/index.html?tokenId=" + tokenId;
 
         String body = null;
         if(status == SubmissionStatus.FIRST_REGISTRATION){
@@ -77,6 +80,7 @@ public class MailService {
                     </html>
                     """;
         } else if (status == SubmissionStatus.ALREADY_PRESENT) {
+            address = baseUrl;
             body = """
                     <html>
                     <head>
@@ -155,7 +159,7 @@ public class MailService {
                     </html>
                     """;
         } else {
-            address = "http://192.168.100.48:8080";
+            address = baseUrl;
             body = """
                     <html>
                     <head>
@@ -195,14 +199,12 @@ public class MailService {
                     </html>
                     """;
         }
-        
 
         try {
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(receiver));
             message.setSubject(subject);
-            //message.setText(body);
             message.setContent(body.formatted(address), "text/html");
 
             Transport.send(message);
@@ -211,8 +213,8 @@ public class MailService {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-
     }
+
     public static void sendEmail(String receiver, boolean isWinner) {
         Session session = mailSetter();
 
@@ -252,13 +254,11 @@ public class MailService {
                     """;
         }
 
-
         try {
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(receiver));
             message.setSubject(subject);
-            //message.setText(body);
             message.setContent(body, "text/html");
 
             Transport.send(message);
@@ -267,8 +267,5 @@ public class MailService {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-
     }
-
-
 }

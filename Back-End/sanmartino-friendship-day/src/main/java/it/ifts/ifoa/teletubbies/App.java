@@ -1,6 +1,5 @@
 package it.ifts.ifoa.teletubbies;
 
-
 import com.google.gson.*;
 import it.ifts.ifoa.teletubbies.config.ConnectionPool;
 import it.ifts.ifoa.teletubbies.controller.ConfirmationController;
@@ -12,9 +11,6 @@ import it.ifts.ifoa.teletubbies.service.UserConfirmationService;
 import it.ifts.ifoa.teletubbies.service.UserSubmissionService;
 
 import java.lang.reflect.Type;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -24,12 +20,15 @@ import java.util.concurrent.TimeUnit;
 
 import static spark.Spark.*;
 
-//Aggiungere Corpo della mail in MailService e oggetto della mail
-//Scegliere se fare un corpo in html o semplice txt
-
 public class App {
+    // Configurazioni da variabili d'ambiente con valori di default
     public final static LocalDateTime START_CONTEST = LocalDateTime.of(2025, Month.JUNE, 1, 9, 0);
     public final static LocalDateTime END_CONTEST = LocalDateTime.of(2025, Month.JULY, 8, 9, 0);
+
+    // Porta configurabile tramite variabile d'ambiente
+    private final static int SERVER_PORT = Integer.parseInt(
+            System.getenv("SERVER_PORT") != null ? System.getenv("SERVER_PORT") : "8080"
+    );
 
     ConnectionPool pool;
     UserRepository userRepository;
@@ -43,16 +42,25 @@ public class App {
     UserSubmissionService userSubmissionService;
     UserConfirmationService userConfirmationService;
 
-    //todo: add shutdown hook
     ExecutorService emailExecutor;
 
     public static void main(String[] args) {
+        // Stampa informazioni di avvio per debugging
+        System.out.println("=== Teletubbies Contest Application Starting ===");
+        System.out.println("Server Port: " + SERVER_PORT);
+        System.out.println("DB Host: " + System.getenv("DB_HOST"));
+        System.out.println("DB Name: " + System.getenv("DB_NAME"));
+        System.out.println("Base URL: " + System.getenv("BASE_URL"));
+        System.out.println("SMTP User: " + System.getenv("SMTP_USER"));
+        System.out.println("===============================================");
+
         new App().run();
     }
 
-
     public App() {
-        port(80);
+        // Configurazione porta del server
+        port(SERVER_PORT);
+
         this.emailExecutor = Executors.newFixedThreadPool(4);
 
         Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
@@ -74,7 +82,6 @@ public class App {
         this.userSubmissionService = new UserSubmissionService(userRepository);
         this.userConfirmationService = new UserConfirmationService(userRepository, emailExecutor);
 
-
         this.submissionsController = new SubmissionsController(gson, userSubmissionService, mailService, emailExecutor);
         this.confirmationController = new ConfirmationController(gson, userConfirmationService);
 
@@ -94,13 +101,13 @@ public class App {
                 pool.close(); // Custom method to release DB connections
                 System.out.println("Resources released successfully.");
             }
-
         }));
-
     }
 
     private void run() {
         submissionsController.initSubmissionEndpoint();
         confirmationController.initConfirmationEndpoint();
+
+        System.out.println("Application started successfully on port " + SERVER_PORT);
     }
 }
