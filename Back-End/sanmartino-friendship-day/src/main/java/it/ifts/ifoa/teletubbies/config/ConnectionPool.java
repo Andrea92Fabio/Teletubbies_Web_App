@@ -10,17 +10,27 @@ public class ConnectionPool {
 
     private static final int SIZE = 5;
     private final Queue<Connection> pool;
+    private final String jdbcUrl; // Campo per memorizzare l'URL JDBC
 
     private ConnectionPool() {
         pool = new LinkedList<>();
 
+        String dbHost = System.getenv("DB_HOST");
+        String dbName = System.getenv("DB_NAME");
+        String dbUser = System.getenv("DB_USER");
+        String dbPass = System.getenv("DB_PASSWORD");
+
+        // Initialize jdbcUrl here
+        this.jdbcUrl = String.format("jdbc:mariadb://%s:3306/%s?user=%s&password=%s", dbHost, dbName, dbUser, dbPass);
+
+
         for(int i = 0; i < SIZE; i++){
             try {
-                 Connection con = DriverManager.getConnection("jdbc:mariadb://localhost:3306/san_martino_friendship_day?user=root");
-                 pool.offer(con);
+                Connection con = DriverManager.getConnection(this.jdbcUrl);
+                pool.offer(con);
             }
             catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Failed to create DB connection", e);
             }
         }
     }
@@ -53,7 +63,7 @@ public class ConnectionPool {
         Connection con = pool.poll();
 
         if (con == null || con.isClosed()){
-             con = DriverManager.getConnection("jdbc:mariadb://localhost:3306/san_martino_friendship_day?user=root");
+            con = DriverManager.getConnection(this.jdbcUrl);
         }
         return con;
     }

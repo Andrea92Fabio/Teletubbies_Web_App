@@ -1,0 +1,10 @@
+FROM mariadb:10.4
+
+# Imposta le variabili d'ambiente obbligatorie
+ENV MARIADB_ROOT_PASSWORD=rootpassword
+ENV MARIADB_DATABASE=san_martino_friendship_day
+ENV MARIADB_USER=user
+ENV MARIADB_PASSWORD=password
+
+# Copia lo script SQL di inizializzazione nel path previsto da MariaDB
+COPY san_martino_friendship_day.sql /docker-entrypoint-initdb.d/

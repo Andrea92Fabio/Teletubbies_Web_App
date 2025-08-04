@@ -34,7 +34,7 @@ CREATE TABLE `customers` (
   `surname` varchar(50) NOT NULL,
   `birthdate` date NOT NULL,
   `gender` varchar(10) NOT NULL,
-  `fiscalCode` varchar(17) DEFAULT '''-''',
+  `fiscalCode` varchar(17) DEFAULT '-',
   `phoneNumber` varchar(13) NOT NULL,
   `residencyCountry` varchar(20) NOT NULL,
   `residencyAddress` varchar(200) NOT NULL,
