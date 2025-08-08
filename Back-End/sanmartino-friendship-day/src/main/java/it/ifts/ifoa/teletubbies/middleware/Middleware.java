@@ -17,6 +17,7 @@ public class Middleware {
    private final Gson gson;
 
     public Middleware(Gson gson) {
+
         this.gson = gson;
     }
 
@@ -43,29 +44,28 @@ public class Middleware {
         });
 
     }
-
+    // blocco che gestisce le date del concorso
     public  void handleRequestBeforeOrAfterContest(){
-        before("/api/*" , (req, res) -> {
-            if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
-                return;
-            }
-            var today = LocalDateTime.now();
-            if (today.isBefore(App.START_CONTEST)|| today.isAfter(App.END_CONTEST)){
-                throw new ContestAlreadyClosedException("2x01");
-            }
-        });
+       // before("/api/*" , (req, res) -> {
+       //     if ("OPTIONS".equalsIgnoreCase(req.requestMethod())) {
+       //         return;
+       //     }
+       //     var today = LocalDateTime.now();
+       //     if (today.isBefore(App.START_CONTEST)|| today.isAfter(App.END_CONTEST)){
+       //         throw new ContestAlreadyClosedException("2x01");
+       //     }
+       // });
 
-        exception(ContestAlreadyClosedException.class, (e, req, res) -> {
-            List<String> errors = new ArrayList<>();
-            Map<String, List<String>> retvalue = new HashMap<>();
+       // exception(ContestAlreadyClosedException.class, (e, req, res) -> {
+       //     List<String> errors = new ArrayList<>();
+       //     Map<String, List<String>> retvalue = new HashMap<>();
 
-            errors.add(e.getMessage());
+       //     errors.add(e.getMessage());
 
-            retvalue.put("errors", errors);
+       //     retvalue.put("errors", errors);
 
-            res.status(HttpStatus.FORBIDDEN_403);
-            res.body(gson.toJson(retvalue));
-        });
-
+       //     res.status(HttpStatus.FORBIDDEN_403);
+       //     res.body(gson.toJson(retvalue));
+        // });
     }
 }

@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 -- Struttura della tabella `customers`
 --
 
-CREATE TABLE `customers` (
+CREATE TABLE IF NOT EXISTS `customers` (
   `id` bigint(20) NOT NULL,
   `email` varchar(100) NOT NULL,
   `name` varchar(50) NOT NULL,
