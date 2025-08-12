@@ -55,32 +55,9 @@ CREATE TABLE IF NOT EXISTS `customers` (
   KEY `Confirmed_Date` (`confirmedDate`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
---
--- Indici per le tabelle scaricate
---
-
---
--- Indici per le tabelle `customers`
---
-/*
-ALTER TABLE `customers`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `tokenId` (`tokenId`),
-  ADD UNIQUE KEY `Email` (`email`),
-  ADD KEY `Confirmed_Date` (`confirmedDate`);
-
---
--- AUTO_INCREMENT per le tabelle scaricate
---
-
---
--- AUTO_INCREMENT per la tabella `customers`
---
-ALTER TABLE `customers`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
-*/
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
