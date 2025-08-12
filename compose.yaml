@@ -7,7 +7,7 @@ services:
       MARIADB_DATABASE: san_martino_friendship_day
     volumes:
       - ./DataBase/san_martino_friendship_day.sql:/docker-entrypoint-initdb.d/init.sql
-      - db_data:/var/lib/mysql
+      # - db_data:/var/lib/mysql
     ports:
       - "3306:3306"  
     networks:
@@ -49,5 +49,5 @@ networks:
   teletubbies-network:
     driver: bridge
 
-volumes:
-  db_data:
+#volumes:
+ # db_data:
