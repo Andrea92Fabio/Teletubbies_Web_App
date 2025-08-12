@@ -48,12 +48,13 @@ CREATE TABLE IF NOT EXISTS `customers` (
   `confirmedDate` timestamp NULL DEFAULT NULL,
   `privacy` tinyint(1) NOT NULL DEFAULT 0,
   `rules` tinyint(1) NOT NULL DEFAULT 0,
-  `tokenId` varchar(50) NOT NULL
+  `tokenId` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tokenId` (`tokenId`),
   UNIQUE KEY `Email` (`email`),
-  KEY `Confirmed_Date` (`confirmedDate`);
+  KEY `Confirmed_Date` (`confirmedDate`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Indici per le tabelle scaricate
