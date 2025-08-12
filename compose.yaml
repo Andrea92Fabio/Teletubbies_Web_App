@@ -14,8 +14,8 @@ services:
       - teletubbies-network
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-pmysecretpassword"]
-      interval: 5s
-      timeout: 5s
+      interval: 2s
+      timeout: 1s
       retries: 5
 
   backend:
@@ -34,9 +34,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 10    
+      interval: 2s
+      timeout: 1s
+      retries: 5    
     networks:
       - teletubbies-network
 
