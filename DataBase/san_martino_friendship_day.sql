@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE IF NOT EXISTS `customers` (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(100) NOT NULL,
   `name` varchar(50) NOT NULL,
   `surname` varchar(50) NOT NULL,
@@ -49,6 +49,10 @@ CREATE TABLE IF NOT EXISTS `customers` (
   `privacy` tinyint(1) NOT NULL DEFAULT 0,
   `rules` tinyint(1) NOT NULL DEFAULT 0,
   `tokenId` varchar(50) NOT NULL
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tokenId` (`tokenId`),
+  UNIQUE KEY `Email` (`email`),
+  KEY `Confirmed_Date` (`confirmedDate`);
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -58,6 +62,7 @@ CREATE TABLE IF NOT EXISTS `customers` (
 --
 -- Indici per le tabelle `customers`
 --
+/*
 ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `tokenId` (`tokenId`),
@@ -74,7 +79,7 @@ ALTER TABLE `customers`
 ALTER TABLE `customers`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
-
+*/
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
