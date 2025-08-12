@@ -14,6 +14,8 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
+RUN apk add --no-cache mysql-client
+
 COPY --from=build /app/target/*.jar ./app.jar
 
 # Variabili d'ambiente con valori di default per sviluppo
