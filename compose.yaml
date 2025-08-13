@@ -9,14 +9,14 @@ services:
       - ./DataBase/san_martino_friendship_day.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/mysql
     ports:
-      - "3306:3306"  
+      - "3307:3306"  
     networks:
       - teletubbies-network
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-pmysecretpassword"]
       interval: 2s
       timeout: 1s
-      retries: 5
+      retries: 10
 
   backend:
     build: ./Back-End/sanmartino-friendship-day
@@ -33,10 +33,10 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 2s
-      timeout: 1s
-      retries: 5    
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]  
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - teletubbies-network
 
@@ -46,7 +46,10 @@ services:
     ports:
       - "8081:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
     networks:
       - teletubbies-network
 
