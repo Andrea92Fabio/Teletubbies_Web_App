@@ -6,18 +6,6 @@ export default function home() {
   view.removeAttribute("inert");
 
   const cards = view.querySelectorAll(".card");
-
-  const partecipateButtons = view.querySelectorAll(".cta");
-
-  partecipateButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      view.classList.remove("active");
-      console.log(btn);
-      form();
-    });
-  });
-
   const fadeInLeft = view.querySelectorAll(".fade-in-left");
   const fadeInTop = view.querySelectorAll(".fade-in-top");
   const fadeInBottom = view.querySelectorAll(".fade-in-bottom");
@@ -43,6 +31,6 @@ export const observer = new IntersectionObserver(
     });
   },
   {
-    rootMargin: "0px 0px -20% 0px",
+    rootMargin: "0px 0px -100px 0px",
   }
 );
