@@ -47,6 +47,9 @@ const user = {
 
 export default function form() {
     view.classList.add('active');
+    // Rimuovi gli attributi che rendono la vista nascosta e non interattiva.
+    // Questo permette a Playwright di trovare e interagire con gli elementi del form,
+    // risolvendo l'errore di timeout.
     view.removeAttribute('aria-hidden');
     view.removeAttribute('inert');
 
