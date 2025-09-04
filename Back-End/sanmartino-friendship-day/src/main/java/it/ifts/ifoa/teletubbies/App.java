@@ -108,6 +108,13 @@ public class App {
         submissionsController.initSubmissionEndpoint();
         confirmationController.initConfirmationEndpoint();
 
+        // Questo endpoint serve per verificare che il server sia attivo e risponda
+        // È molto utile per gli script di attesa nelle pipeline di CI/CD.
+        get("/health", (req, res) -> {
+            res.status(200); // Codice di stato OK
+            return "OK";     // Messaggio di risposta semplice
+        });
+
         System.out.println("Application started successfully on port " + SERVER_PORT);
     }
 }
