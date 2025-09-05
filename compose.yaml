@@ -1,0 +1,53 @@
+services:
+  db:
+    build: ./DataBase
+    container_name: teletubbies-db
+    environment:
+      MARIADB_ROOT_PASSWORD: mysecretpassword
+      MARIADB_DATABASE: san_martino_friendship_day
+    volumes:
+      - ./DataBase/san_martino_friendship_day.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"  
+    networks:
+      - teletubbies-network
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-pmysecretpassword"]
+      interval: 2s
+      timeout: 1s
+      retries: 10
+      start_period: 20s
+  backend:
+    build: ./Back-End/sanmartino-friendship-day
+    container_name: teletubbies-backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: san_martino_friendship_day
+      DB_USER: root
+      DB_PASSWORD: mysecretpassword
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - teletubbies-network
+
+  frontend:
+    build: ./Front-End
+    container_name: teletubbies-frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - teletubbies-network
+
+networks:
+  teletubbies-network:
+    driver: bridge
+
+volumes:
+  db_data:

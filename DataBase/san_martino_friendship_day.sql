@@ -27,8 +27,8 @@ SET time_zone = "+00:00";
 -- Struttura della tabella `customers`
 --
 
-CREATE TABLE `customers` (
-  `id` bigint(20) NOT NULL,
+CREATE TABLE IF NOT EXISTS `customers` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `email` varchar(100) NOT NULL,
   `name` varchar(50) NOT NULL,
   `surname` varchar(50) NOT NULL,
@@ -48,31 +48,13 @@ CREATE TABLE `customers` (
   `confirmedDate` timestamp NULL DEFAULT NULL,
   `privacy` tinyint(1) NOT NULL DEFAULT 0,
   `rules` tinyint(1) NOT NULL DEFAULT 0,
-  `tokenId` varchar(50) NOT NULL
+  `tokenId` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tokenId` (`tokenId`),
+  UNIQUE KEY `Email` (`email`),
+  KEY `Confirmed_Date` (`confirmedDate`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Indici per le tabelle scaricate
---
-
---
--- Indici per le tabelle `customers`
---
-ALTER TABLE `customers`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `tokenId` (`tokenId`),
-  ADD UNIQUE KEY `Email` (`email`),
-  ADD KEY `Confirmed_Date` (`confirmedDate`);
-
---
--- AUTO_INCREMENT per le tabelle scaricate
---
-
---
--- AUTO_INCREMENT per la tabella `customers`
---
-ALTER TABLE `customers`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
