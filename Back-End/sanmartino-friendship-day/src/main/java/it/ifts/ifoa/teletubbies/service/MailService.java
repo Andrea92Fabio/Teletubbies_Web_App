@@ -16,7 +16,7 @@ public class MailService {
         String baseUrl = System.getenv("BASE_URL");
 
         String host = "smtp.gmail.com";
-        int port = 587;
+        int port = Integer.parseInt(System.getenv("SMTP_PORT"));
         Properties props = new Properties();
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", port);
