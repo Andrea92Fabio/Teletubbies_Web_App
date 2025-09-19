@@ -61,4 +61,5 @@ test('completes the registration flow successfully', async ({ page }) => {
     await expect(page.locator('#view-thank-you')).toBeVisible();
 
     console.log('TEST COMPLETATO CON SUCCESSO!');
+    // await page.pause();
 });
