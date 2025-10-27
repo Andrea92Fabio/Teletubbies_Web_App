@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: {{ .Values.backend.initDbImage }}
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            echo "Attesa che il database {{ .Release.Name }}-db sia disponibile..."
+            until mariadb -h {{ .Release.Name }}-db -u ${DB_USER} -p${DB_PASSWORD} -e "SELECT 1;" > /dev/null 2>&1; do
+              echo "Database non ancora pronto, attesa 3 secondi..."
+              sleep 3
+            done
+            echo "Database pronto. Avvio del Backend."
+        env:
+        # Recupera le credenziali dal Secret
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_PASSWORD
+              
+      # CONTAINER PRINCIPALE
+      containers:
+      - name: backend-container
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.backend.service.targetPort }}
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 12 }}
+        env: 
+        # Variabili d'ambiente per la connessione DB dell'applicazione
+        - name: DB_HOST
+          value: "{{ .Release.Name }}-db"
+        - name: DB_PORT
+          value: {{ .Values.backend.db.port | quote }}
+        - name: DB_NAME
+          value: {{ .Values.backend.db.name | quote }}
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_PASSWORD
+              
+        # Liveness Probe
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.backend.service.targetPort }}
+          initialDelaySeconds: 20
+          periodSeconds: 20
+          timeoutSeconds: 10
+        
+        # Readiness Probe
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.backend.service.targetPort }}
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 10

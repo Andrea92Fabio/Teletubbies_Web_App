@@ -1,0 +1,37 @@
+# ------------------------------------
+# 1. IDE / Configurazione Locale
+# ------------------------------------
+# File di configurazione dell'IDE (IntelliJ, VSCode)
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# File di sistema e temporanei
+.DS_Store
+Thumbs.db
+
+# 2. Output di Compilazione Java (Maven/Gradle)
+# Cartelle standard di compilazione
+target/
+out/
+build/
+
+# Artifacts Maven
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# 3. Dipendenze Frontend (Node/NPM)
+node_modules/
+package-lock.json  # Già presente nel tuo albero ma di solito va ignorato
+
+# 4. Artifacts di Container e Kubernetes
+# Helm
+*.tgz

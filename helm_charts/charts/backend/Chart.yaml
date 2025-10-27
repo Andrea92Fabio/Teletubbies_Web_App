@@ -1,0 +1,7 @@
+apiVersion: v2
+# Il nome del chart. Deve corrispondere al nome della directory.
+name: teletubbies-backend
+description: Il subchart per il servizio Backend (Java/Spring Boot) dell'applicazione Teletubbies.
+type: application
+version: 0.1.0 
+appVersion: "1.0.0" 

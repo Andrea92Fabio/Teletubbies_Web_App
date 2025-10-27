@@ -1,0 +1,14 @@
+{{- if .Values.db.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "db.fullname" . }}-pvc
+  labels:
+    {{- include "db.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.db.pvc.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.db.pvc.storage | quote }}
+{{- end }}

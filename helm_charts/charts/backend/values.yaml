@@ -1,0 +1,44 @@
+backend:
+  enabled: true
+  replicaCount: 3 # Numero di Pods da lanciare
+
+  image:
+    repository: teletubbies-backend
+    tag: v1.0.1
+    pullPolicy: Never # Usa 'Never' se l'immagine è solo locale (es. Minikube)
+
+  # Init Container per attesa db
+  initDbImage: mariadb:10.6.12  
+
+  service:
+    type: ClusterIP
+    port: 8080 # Porta del Service
+    targetPort: 8080 # Porta del Container
+
+  # Variabili d'ambiente per la connessione al DB
+  db:
+    host: teletubbies-db # Nome del Service del DB
+    port: 3306 
+    name: san_martino_friendship_day # Nome del Database
+    # Nota: DB_USER e DB_PASSWORD sono letti dal Secret, gestito dal Chart principale.
+
+  # Configurazioni per le resource requests/limits
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "400m"
+      memory: "1Gi"
+
+  # Configurazioni delle Probe (molto importanti per il Backend Java)
+  probes:
+    liveness:
+      path: /health
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readiness:
+      path: /health
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      
