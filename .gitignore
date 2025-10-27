@@ -1,0 +1,14 @@
+# IDE / Local Configuration Files
+.idea/
+*.iml
+
+# Compilation / Build Output
+out/
+target/
+build/
+
+# Node (Se presente)
+node_modules/
+
+# Helm Artifacts
+*.tgz
