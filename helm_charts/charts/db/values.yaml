@@ -1,11 +1,10 @@
 db:
   enabled: true
-  # Le credenziali vengono ereditate dal Chart genitore
-  
+
   # Immagine
   image: 
     repository: teletubbies-db
-    tag: v1.0.1
+    tag: v1.0.0
     pullPolicy: Never # Utile per i test in Minikube
     
   # Service

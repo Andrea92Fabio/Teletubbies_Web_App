@@ -1,11 +1,11 @@
 frontend:
   enabled: true
-  replicaCount: 3
+  replicaCount: 1
   
   # Immagine
   image:
     repository: teletubbies-frontend
-    tag: v1.0.1
+    tag: v1.0.0
     pullPolicy: Never # Utile per i test in Minikube
 
   # Service

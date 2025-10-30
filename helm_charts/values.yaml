@@ -13,7 +13,7 @@ global:
 # Questi valori vengono utilizzati solo per creare il Secret K8s nel Chart radice.
 secret:
   dbUser: "root"
-  dbPassword: "mysecretpassword" # DEVE essere cambiato in ambiente di produzione!
+  dbPassword: "mysecretpassword"
 
 # --- CONFIGURAZIONE FRONTEND (SUBCHART) ---
 frontend:
@@ -21,7 +21,7 @@ frontend:
   replicaCount: 3
   image:
     repository: teletubbies-frontend
-    tag: v1.0.1
+    tag: v1.0.0
     pullPolicy: Never # Per Minikube/immagini locali
   service:
     port: 80
@@ -37,7 +37,7 @@ backend:
   
   image:
     repository: teletubbies-backend
-    tag: v1.0.1
+    tag: v1.0.0
     pullPolicy: Never
     
   service:
@@ -65,19 +65,20 @@ db:
   # Immagine
   image: 
     repository: teletubbies-db
-    tag: v1.0.1
+    tag: v1.0.0
     pullPolicy: Never # Utile per i test in Minikube
+
   # Service
   service:
     port: 3306
     targetPort: 3306
     type: ClusterIP
+
   # Deployment
   databaseName: san_martino_friendship_day
   waitTimeout: "300"
   interactiveTimeout: "300"
   # Persistent Volume Claim
-  # Ho mantenuto 'pvc' qui, come nei template k8s-db-deployment.yaml e k8s-db-pvc.yaml.
   # Se preferisci 'persistence', dovrai modificare anche i template del DB.
   pvc: 
     enabled: true
