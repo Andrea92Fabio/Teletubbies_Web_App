@@ -1,3 +1,5 @@
+# Frontend Configmap
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,8 +7,6 @@ metadata:
   labels:
     {{- include "db.labels" . | nindent 4 }}
 data:
-  # Il nome del file che verrà creato all'interno della ConfigMap (deve finire in .sql)
-  # Questo contenuto SQL verrà montato dal Deployment DB per l'inizializzazione.
   init.sql: |
     -- phpMyAdmin SQL Dump
     -- version 5.2.1

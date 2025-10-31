@@ -1,3 +1,5 @@
+# Frontend Chart
+
 apiVersion: v2
 name: frontend
 description: A Chart per il servizio Frontend (Nginx)

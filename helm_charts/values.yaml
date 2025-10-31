@@ -1,54 +1,50 @@
-# Configurazione Globale/Comune
+# values.yaml (Radice)
+
 global:
   nameOverride: "teletubbies"
   labels:
     app.kubernetes.io/name: teletubbies-app
-    app.kubernetes.io/instance: ""
   secret:
     db:
-      # Questo nome è quello che viene usato in k8s-secrets.yaml (teletubbies-db-creds)
       name: "teletubbies-db-creds" 
 
-# --- SEZIONE SECRET PER CREAZIONE RISORSA K8S ---
-# Questi valori vengono utilizzati solo per creare il Secret K8s nel Chart radice.
-secret:
+rootSecretCredentials:
   dbUser: "root"
   dbPassword: "mysecretpassword"
 
-# --- CONFIGURAZIONE FRONTEND (SUBCHART) ---
+# CONFIGURAZIONE FRONTEND (SUBCHART)
 frontend:
   enabled: true
-  replicaCount: 3
+  fullnameOverride: teletubbies-frontend
+  replicaCount: 1
   image:
     repository: teletubbies-frontend
     tag: v1.0.0
-    pullPolicy: Never # Per Minikube/immagini locali
+    pullPolicy: Never 
   service:
     port: 80
   ingress:
     enabled: true
-    host: "progetto.teletubbies.com" # Il dominio per l'Ingress
+    host: "progetto.teletubbies.com"
     className: "nginx"
 
-# --- CONFIGURAZIONE BACKEND (SUBCHART) ---
+# CONFIGURAZIONE BACKEND (SUBCHART)
 backend:
   enabled: true
-  replicaCount: 3
-  
+  fullnameOverride: teletubbies-backend
+  replicaCount: 1
   image:
     repository: teletubbies-backend
     tag: v1.0.0
     pullPolicy: Never
-    
   service:
     port: 8080
     targetPort: 8080
     type: ClusterIP
-  healthPath: "/health" # Endpoint per Liveness/Readiness Probe
-  initDbImage: "mariadb:10.6.12" # Immagine per l'Init Container
-  # Configurazione di connessione al DB (usa il Service name del DB)
+  healthPath: "/health" 
+  initDbImage: "mariadb:10.6.12" 
+  # Configurazione di connessione al DB (usa il Service name del DB, definito nel subchart db)
   db:
-    # Service Host del DB (es. nome-release-db)
     host: teletubbies-db 
     port: 3306
     name: san_martino_friendship_day
@@ -59,14 +55,15 @@ backend:
     limits:
       cpu: "400m"
       memory: "1Gi"
-# --- CONFIGURAZIONE DATABASE (SUBCHART) ---
+
+# CONFIGURAZIONE DATABASE (SUBCHART)
 db:
   enabled: true 
-  # Immagine
+  fullnameOverride: teletubbies-db
   image: 
     repository: teletubbies-db
     tag: v1.0.0
-    pullPolicy: Never # Utile per i test in Minikube
+    pullPolicy: Never 
 
   # Service
   service:
@@ -79,7 +76,6 @@ db:
   waitTimeout: "300"
   interactiveTimeout: "300"
   # Persistent Volume Claim
-  # Se preferisci 'persistence', dovrai modificare anche i template del DB.
   pvc: 
     enabled: true
     storage: 5Gi

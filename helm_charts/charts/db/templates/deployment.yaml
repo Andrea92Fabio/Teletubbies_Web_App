@@ -1,10 +1,11 @@
+# Database Deployment
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "db.fullname" . }}
   labels:
     {{- include "db.labels" . | nindent 4 }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
 spec:
   replicas: 1 
   selector:
@@ -14,8 +15,10 @@ spec:
     metadata:
       labels:
         {{- include "db.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    spec:     
+    spec:
+      securityContext:
+        fsGroup: 999 
+        runAsUser: 999
       containers: 
       - name: db-container
         image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag }}"

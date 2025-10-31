@@ -1,6 +1,22 @@
+# Global Configuration Chart
+
 apiVersion: v2
 name: teletubbies-web-app
 description: Un Helm Chart per il deployment completo dell'applicazione Teletubbies Web App su Kubernetes.
 type: application
 version: 1.0.0
 appVersion: "1.0.0"
+
+dependencies:
+  - name: frontend
+    version: "1.0.0"
+    repository: "file://charts/frontend"
+    condition: frontend.enabled 
+  - name: backend
+    version: "1.0.0"
+    repository: "file://charts/backend"
+    condition: backend.enabled
+  - name: db
+    version: "1.0.0"
+    repository: "file://charts/db"
+    condition: db.enabled

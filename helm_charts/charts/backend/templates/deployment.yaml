@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "backend.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.backend.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "backend.selectorLabels" . | nindent 6 }}
@@ -17,21 +17,36 @@ spec:
         {{- include "backend.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
-      - name: wait-for-db
-        image: {{ .Values.backend.initDbImage }}
+      - name: initsql
+        image: {{ .Values.initDbImage }}
         imagePullPolicy: IfNotPresent
         
         securityContext:
           runAsUser: 0
 
+        env:
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_PASSWORD
+
+        volumeMounts:
+        - name: db-schema-migration
+          mountPath: /schema 
+
         command: ["/bin/bash", "-c"]
         args:
           - |
-            DB_HOST={{ .Release.Name }}-db
-            DB_NAME={{ .Values.backend.db.name }}
+            DB_HOST={{ .Values.db.host }}
+            DB_NAME={{ .Values.db.name }}
             
             echo "1. Waiting for DB service $DB_HOST to be available..."
-            # Check connettività semplice
             until mariadb -h $DB_HOST -u ${DB_USER} -p${DB_PASSWORD} -e "SELECT 1;" > /dev/null 2>&1; do
               echo "Database non ancora pronto, attesa 3 secondi..."
               sleep 3
@@ -40,7 +55,8 @@ spec:
 
             echo "2. Running schema migration (init.sql) on $DB_NAME..."
             # Esegue lo script SQL montato dalla ConfigMap del DB
-            mariadb -h $DB_HOST -u ${DB_USER} -p${DB_PASSWORD} < /schema/init.sql
+            # 🚨 CORREZIONE: Aggiunta esplicita di $DB_NAME e percorso corretto
+            mariadb -h $DB_HOST -u ${DB_USER} -p${DB_PASSWORD} $DB_NAME < /schema/init.sql
             
             if [ $? -ne 0 ]; then
                 echo "ERRORE: La migrazione dello schema è fallita."
@@ -55,42 +71,23 @@ spec:
             done
             
             echo "DB schema loaded successfully. Starting Backend."
-        env:
-        # Retrieve credentials from the Secret
-        - name: DB_USER 
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
-              key: DB_USER             
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
-              key: DB_PASSWORD
-        
-        # MONTAGGIO DELLO SCHEMA DEL DB NEL BACKEND (CORRETTO)
-        volumeMounts:
-        - name: db-schema-migration # Nome del volume definito in 'volumes'
-          mountPath: /schema       # Percorso di mount nel container
 
-              
-      # MAIN CONTAINER
       containers:
       - name: backend-container
-        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
-        - containerPort: {{ .Values.backend.service.targetPort }}
+        - containerPort: {{ .Values.service.targetPort }}
         resources:
-          {{- toYaml .Values.backend.resources | nindent 12 }}
+          {{- toYaml .Values.resources | nindent 12 }}
+          
         env: 
-        # Environment variables for application DB connection
         - name: DB_HOST
-          value: "{{ .Release.Name }}-db"
+          value: "{{ .Values.db.host }}"
         - name: DB_PORT
-          value: {{ .Values.backend.db.port | quote }}
+          value: {{ .Values.db.port | quote }}
         - name: DB_NAME
-          value: {{ .Values.backend.db.name | quote }}
+          value: {{ .Values.db.name | quote }}
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
@@ -105,27 +102,23 @@ spec:
         # Liveness Probe
         livenessProbe:
           httpGet:
-            path: /health
-            port: {{ .Values.backend.service.targetPort }}
-          initialDelaySeconds: 20
-          periodSeconds: 20
+            path: {{ .Values.probes.liveness.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
           timeoutSeconds: 10
         
         # Readiness Probe
         readinessProbe:
           httpGet:
-            path: /health
-            port: {{ .Values.backend.service.targetPort }}
-          initialDelaySeconds: 20
-          periodSeconds: 10
+            path: {{ .Values.probes.readiness.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
           timeoutSeconds: 10
 
       # DEFINIZIONE DEI VOLUMI
       volumes:
       - name: db-schema-migration
         configMap:
-          # Questo definisce il contenuto del volume, puntando alla ConfigMap del DB
-          name: {{ .Release.Name }}-db-schema-script
-          items:
-          - key: init.sql
-            path: init.sql    
+          name: {{ include "db.fullname" $ }}-schema-script

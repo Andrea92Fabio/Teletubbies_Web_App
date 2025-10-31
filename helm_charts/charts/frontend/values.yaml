@@ -1,3 +1,5 @@
+# Frontend Values
+
 frontend:
   enabled: true
   replicaCount: 1
