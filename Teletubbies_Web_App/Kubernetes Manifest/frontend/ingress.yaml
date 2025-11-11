@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teletubbies-ingress
+  labels:
+    app: teletubbies
+  # Se usi l'Ingress Controller Nginx (standard in Minikube/EKS):
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: progetto.teletubbies.com # Sostituisci con il tuo dominio di test (o usa minikube service)
+    http:
+      paths:
+      # 1. Regola API: Tutto il traffico che inizia con /api 
+      # va al Service del Backend sulla porta 8080
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: teletubbies-backend 
+            port:
+              number: 8080
+      # 2. Regola di Default: Tutto il resto (/) 
+      # va al Service del Frontend sulla porta 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teletubbies-frontend
+            port:
+              number: 80

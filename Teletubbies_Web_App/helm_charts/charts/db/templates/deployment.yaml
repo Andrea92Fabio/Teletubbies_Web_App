@@ -1,0 +1,75 @@
+{{- if .Values.db.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "db.fullname" . }}
+  labels:
+    {{- include "db.labels" . | nindent 4 }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "db.selectorLabels" . | nindent 6 }} # Indentazione 6
+  
+  template:
+    metadata:
+      labels:
+        {{- include "db.selectorLabels" . | nindent 8 }} # Indentazione 8
+    spec:
+      containers: 
+      - name: db-container
+        image: "{{ .Values.db.image.repository }}:{{ .Values.db.image.tag }}"
+        imagePullPolicy: {{ .Values.db.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.db.service.targetPort }}
+        
+        env:
+        - name: MARIADB_DATABASE
+          value: {{ .Values.db.databaseName | quote }}
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_USER
+        - name: MARIADB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_PASSWORD
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secret.db.name }}
+              key: DB_ROOT_PASSWORD
+        - name: MARIADB_WAIT_TIMEOUT
+          value: {{ .Values.db.waitTimeout | quote }}
+        - name: MARIADB_INTERACTIVE_TIMEOUT
+          value: {{ .Values.db.interactiveTimeout | quote }}
+          
+        volumeMounts:
+        {{- if .Values.db.pvc.enabled }}
+        - name: db-persistent-storage
+          mountPath: /var/lib/mysql
+        {{- end }}
+        - name: schema-volume
+          mountPath: /docker-entrypoint-initdb.d
+          
+        resources:
+          {{- toYaml .Values.db.resources | nindent 12 }} # Indentazione 12
+          
+      volumes: 
+      {{- if .Values.db.pvc.enabled }}
+      - name: db-persistent-storage
+        persistentVolumeClaim:
+          claimName: {{ include "db.fullname" . }}-pvc
+      {{- end }}
+      - name: schema-volume
+        configMap:
+          name: {{ include "db.fullname" . }}-schema-script
+          items:
+            - key: init.sql 
+              path: init.sql
+
+      serviceAccountName: default
+
+{{- end }}

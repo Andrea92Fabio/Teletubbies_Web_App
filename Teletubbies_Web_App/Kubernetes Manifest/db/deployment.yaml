@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teletubbies-db
+  labels:
+    app: teletubbies
+    component: db
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      component: db
+  template:
+    metadata:
+      labels:
+        component: db
+    spec:     
+      containers: 
+      - name: db-container
+        image: teletubbies-db:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MARIADB_DATABASE
+          value: san_martino_friendship_day
+        - name: MARIADB_USER
+          valueFrom:
+            secretKeyRef:
+              name: teletubbies-db-creds
+              key: DB_USER
+        - name: MARIADB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teletubbies-db-creds
+              key: DB_PASSWORD
+        - name: MARIADB_WAIT_TIMEOUT
+          value: "300"
+        - name: MARIADB_INTERACTIVE_TIMEOUT
+          value: "300"
+          
+        volumeMounts:
+        # Montaggio del volume persistente per i dati del DB
+        - name: db-persistent-storage
+          mountPath: /var/lib/mysql
+        # Montaggio dello schema per l'inizializzazione automatica del DB
+        # MariaDB cerca gli script in questa directory al primo avvio
+        - name: schema-volume
+          mountPath: /docker-entrypoint-initdb.d
+          
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+          
+      volumes: 
+      - name: db-persistent-storage
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+      - name: schema-volume
+        configMap:
+          name: db-schema-script
+          items:
+            # Il file 'init.sql' dalla ConfigMap verrà caricato in /docker-entrypoint-initdb.d/init.sql
+            - key: init.sql
+              path: init.sql

@@ -1,0 +1,44 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "frontend.fullname" . }}-ingress
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+  annotations:
+    # Specifica la classe Ingress (es. nginx)
+    {{- if .Values.ingress.className }}
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- end }}
+    # Altre eventuali annotations specifiche dell'Ingress Controller (es. rewrite, cert-manager)
+spec:
+  # L'ingressClassName è preferibile rispetto all'annotation se supportato dal controller
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      # 1. Regola API: Tutto il traffico che inizia con /api viene inoltrato al Service del Backend.
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            # Il Service name del backend deve essere risolto correttamente.
+            # Assume che la funzione "fullname" del Backend sia disponibile (o che Helm la risolva).
+            name: {{ include "backend.fullname" . }} 
+            port:
+              # Usa la porta definita per il Service del Backend nei values.yaml del Frontend.
+              number: {{ .Values.ingress.backendServicePort }} 
+              
+      # 2. Regola di Default: Tutto il resto del traffico (/) va al Service del Frontend.
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "frontend.fullname" . }}
+            port:
+              # Usa la porta del Service del Frontend.
+              number: {{ .Values.frontend.service.port }}
+{{- end }}

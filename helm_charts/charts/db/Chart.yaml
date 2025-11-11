@@ -1,6 +1,0 @@
-apiVersion: v2
-name: db
-description: A Chart per il Database MariaDB
-type: application
-version: 1.0.0
-appVersion: "10.6.12"

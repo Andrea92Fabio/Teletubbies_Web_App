@@ -1,0 +1,32 @@
+db:
+  enabled: true
+
+  # Immagine
+  image: 
+    repository: teletubbies-db
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+    
+  # Service
+  service:
+    port: 3306
+    targetPort: 3306
+    type: ClusterIP
+
+  # Deployment
+  databaseName: san_martino_friendship_day
+  waitTimeout: "300"
+  interactiveTimeout: "300"
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  # Persistent Volume Claim
+  pvc:
+    enabled: true
+    storage: 5Gi
+    accessModes: ReadWriteOnce
