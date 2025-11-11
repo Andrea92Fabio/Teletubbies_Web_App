@@ -1,0 +1,24 @@
+Ignora le directory di build e di dipendenze comuni
+
+*/node_modules
+*/vendor
+*/target
+*/dist
+*/.git
+*/.gitignore
+*/.DS_Store
+*/*.log
+*/.vscode/
+
+Ignora i file temporanei
+
+*.tgz
+*.zip
+*.tar
+*.pack
+
+Ignora specifici file di build o di configurazione locale
+
+Dockerfile*
+docker-compose.yaml
+compose.yaml

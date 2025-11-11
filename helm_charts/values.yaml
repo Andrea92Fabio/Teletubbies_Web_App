@@ -1,0 +1,106 @@
+# Configurazione Globale/Comune
+global:
+  # Base name override per tutte le risorse (es. se release è 'my-app', fullname diventa 'my-app-teletubbies')
+  nameOverride: "teletubbies" 
+  labels:
+    app.kubernetes.io/name: teletubbies-app
+    app.kubernetes.io/instance: ""
+  secret:
+    db:
+      # Nome del Secret che sarà creato nel chart radice
+      name: "teletubbies-db-creds" 
+      
+# Secret
+secret:
+  dbUser: "user" 
+  dbPassword: "password"
+  dbRootPassword: "rootpassword"
+
+# 1. SubChart DB
+db:
+  enabled: true
+  
+  image: 
+    repository: mariadb
+    tag: 10.6.12
+    pullPolicy: IfNotPresent 
+    
+  service:
+    port: 3306
+    targetPort: 3306
+    type: ClusterIP
+
+  databaseName: san_martino_friendship_day
+  waitTimeout: "300"
+  interactiveTimeout: "300"
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  pvc:
+    enabled: true
+    storage: 5Gi
+    accessModes: ReadWriteOnce
+
+# 2. SubChart Backend
+backend:
+  enabled: true
+  replicaCount: 1
+  
+  image:
+    repository: teletubbies-backend
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+    
+  service:
+    port: 8080
+    targetPort: 8080
+    type: ClusterIP
+    
+  healthPath: "/health" 
+  initDbImage: "mariadb:10.6.12" 
+  
+  # Service Host DB (nome-release-db)
+  dbHost: "{{ .Release.Name }}-teletubbies-db" 
+  dbPort: 3306
+  
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "400m"
+      memory: "1Gi"
+
+# 3. SubChart Frontend
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: teletubbies-frontend
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+    
+  service:
+    port: 80
+    targetPort: 80
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+      
+  # Configurazione Ingress del Frontend
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: "progetto.teletubbies.com"
+    backendServicePort: 8080

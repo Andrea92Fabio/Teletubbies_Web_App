@@ -1,0 +1,101 @@
+# FILE: kubernetes/backend/k8s-backend-deployment.yaml
+# Descrizione: Deployment per il servizio Backend (Java)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teletubbies-backend
+  labels:
+    app: teletubbies
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: teletubbies
+        component: backend
+    spec:
+      # NUOVO INIT CONTAINER: Attesa che il DB sia pronto
+      initContainers:
+      - name: wait-for-db
+        # Usa un'immagine con il client MariaDB per la verifica della connessione
+        image: mariadb:10.6.12 
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            echo "Attesa che il database teletubbies-db sia disponibile..."
+            # Attende finché il client MariaDB non riesce a connettersi al Service
+            # Usiamo DB_USER e DB_PASSWORD dal Secret per la verifica.
+            until mariadb -h teletubbies-db -u ${DB_USER} -p${DB_PASSWORD} -e "SELECT 1;" > /dev/null 2>&1; do
+              echo "Database non ancora pronto, attesa 3 secondi..."
+              sleep 3
+            done
+            echo "Database teletubbies-db pronto. Avvio del Backend."
+        env:
+        # Recupera le credenziali dal Secret, essenziali per la verifica di connessione
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: teletubbies-db-creds 
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teletubbies-db-creds
+              key: DB_PASSWORD
+      # CONTAINER PRINCIPALE
+      containers:
+      - name: backend-container
+        # 1. Immagine locale creata con 'docker build'
+        image: teletubbies-backend:latest
+        imagePullPolicy: Never 
+        ports:
+        - containerPort: 8080 
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "400m"
+            memory: "1Gi"
+        env: 
+        # 3. Variabili d'ambiente per il Backend
+        - name: DB_HOST
+          # Usa il nome del Service K8s del DB
+          value: "teletubbies-db" 
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          value: "san_martino_friendship_day"
+        # 4. Recupero delle credenziali dal Secret
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: teletubbies-db-creds 
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teletubbies-db-creds
+              key: DB_PASSWORD
+              
+        # 5. Liveness Probe: Controlla se l'applicazione è in vita e non bloccata
+        livenessProbe:
+          httpGet:
+            path: /health 
+            port: 8080
+          initialDelaySeconds: 15 # Tempo di attesa prima del primo check
+          periodSeconds: 20       # Intervallo tra i check
+        
+        # 6. Readiness Probe: Controlla se l'applicazione è pronta ad accettare traffico
+        readinessProbe:
+          httpGet:
+            path: /health 
+            port: 8080
+          initialDelaySeconds: 5  # Avvia i check prima della Liveness
+          periodSeconds: 10       # Intervallo tra i check

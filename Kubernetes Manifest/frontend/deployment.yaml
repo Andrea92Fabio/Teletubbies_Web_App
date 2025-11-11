@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teletubbies-frontend
+  labels:
+    app: teletubbies
+    component: frontend
+spec:
+  replicas: 3 # Tre istanze per scalabilità
+  selector:
+    matchLabels:
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: teletubbies
+        component: frontend
+    spec:
+      containers:
+      - name: frontend-container
+        # 1. Immagine locale per Minikube (usata dopo il 'docker build -t ...')
+        image: teletubbies-frontend:latest 
+        # 2. Istruzione per Minikube: non scaricare da registry esterno
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80 # La porta su cui ascolta il container Nginx
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "200m"
+            memory: "512Mi"
+        # N.B.: Le Liveness/Readiness probe sono omesse qui per i servizi statici (Nginx), 
+        # ma sono fondamentali per il Backend (come visto prima).

@@ -1,0 +1,20 @@
+apiVersion: v2
+name: teletubbies-web-app
+description: Un Helm chart per l'intera applicazione Teletubbies Web App, che include DB, Backend e Frontend.
+type: application
+version: 1.0.0
+appVersion: "v1.0.0"
+
+dependencies:
+- name: db
+  version: 1.0.0
+  repository: file://charts/db
+  condition: db.enabled
+- name: backend
+  version: 1.0.0
+  repository: file://charts/backend
+  condition: backend.enabled
+- name: frontend
+  version: 1.0.0
+  repository: file://charts/frontend
+  condition: frontend.enabled

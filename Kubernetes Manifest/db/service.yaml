@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: teletubbies-db # Nome del Service usato dal Backend come DB_HOST
+  labels:
+    app: teletubbies
+    component: db
+spec:
+  selector:
+    component: db
+  ports:
+    - protocol: TCP
+      port: 3306        
+      targetPort: 3306  
+  type: ClusterIP

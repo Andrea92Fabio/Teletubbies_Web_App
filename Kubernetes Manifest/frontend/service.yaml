@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: teletubbies-frontend # Il nome DNS interno che l'Ingress utilizzerà
+  labels:
+    app: teletubbies
+    component: frontend
+spec:
+  # Seleziona i Pods del Deployment del Frontend
+  selector:
+    component: frontend
+  ports:
+    - protocol: TCP
+      port: 80        # La porta che il Service espone nel cluster
+      targetPort: 80  # La porta del container Nginx (deve coincidere con containerPort)
+  type: ClusterIP      # Accessibile solo all'interno del cluster

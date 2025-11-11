@@ -1,0 +1,35 @@
+# 1. IDE / Configurazione Locale
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# File di sistema e temporanei
+.DS_Store
+Thumbs.db
+
+# 2. Output di Compilazione Java (Maven/Gradle)
+target/
+out/
+build/
+
+# Artifacts Maven
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# 3. Dipendenze Frontend (Node/NPM)
+node_modules/
+package-lock.json
+
+# 4. Artifacts di Container e Kubernetes
+*.tgz
+
+# 5. k8s Manifest
+k8s_manifest/
