@@ -1,10 +1,5 @@
 # Configurazione Globale/Comune
 
-serviceAccount:
-  create: true
-  name: "" # Se vuoto, usa il nome generato dal template helper
-  imagePullSecrets: []
-
 global:
   # Base name override per tutte le risorse (es. se release è 'my-app', fullname diventa 'my-app-teletubbies')
   nameOverride: "teletubbies" 
@@ -15,6 +10,12 @@ global:
     db:
       # Nome del Secret che sarà creato nel chart radice
       name: "teletubbies-db-creds" 
+
+  serviceAccount:
+    create: true
+    name: ""
+    imagePullSecrets: []
+    annotations: {}      
       
 # Secret
 secret:

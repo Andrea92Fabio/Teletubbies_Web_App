@@ -1,3 +1,4 @@
+# values ambiente Dev
 
 global:
   nameOverride: "teletubbies-dev"
@@ -5,15 +6,15 @@ global:
     # Etichetta ambiente
     app.kubernetes.io/environment: dev 
 
-# creation Account (IRSA)
-serviceAccount:
-  create: true
-  name: "teletubbies-eks-deployer"
+  # creation Account (IRSA)
+  serviceAccount:
+    create: true
+    name: "teletubbies-eks-deployer"
 
-  # Annotazione IRSA che collega il SA al Ruolo IAM "ecr-pull-images"
-  annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
-    # ASSICURATI DI SOSTITUIRE <ACCOUNT_ID> CON L'ID REALE DEL TUO ACCOUNT AWS
+    # Annotazione IRSA che collega il SA al Ruolo IAM "ecr-pull-images"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
+      # ASSICURATI DI SOSTITUIRE <ACCOUNT_ID> CON L'ID REALE DEL TUO ACCOUNT AWS
 
 db:
   # SA Injection
