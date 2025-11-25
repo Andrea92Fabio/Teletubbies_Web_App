@@ -1,0 +1,84 @@
+
+global:
+  nameOverride: "teletubbies-dev"
+  labels:
+    # Etichetta ambiente
+    app.kubernetes.io/environment: dev 
+
+# creation Account (IRSA)
+serviceAccount:
+  create: true
+  name: "teletubbies-eks-deployer"
+
+  # Annotazione IRSA che collega il SA al Ruolo IAM "ecr-pull-images"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
+    # ASSICURATI DI SOSTITUIRE <ACCOUNT_ID> CON L'ID REALE DEL TUO ACCOUNT AWS
+
+db:
+  # SA Injection
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+
+  # Immagine da ECR
+  image: 
+    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
+    tag: v1.0.0
+    pullPolicy: Always
+    
+  pvc:
+    # Override PVC: Garantisce la persistenza su EKS
+    enabled: true
+    storage: 5Gi
+    # Override PVC: Specifica che deve essere usato il tipo di volume EBS GP2
+    storageClassName: "gp2"
+    
+  resources:
+    requests:
+      # Risorse ridotte per minikube/dev
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+backend:
+  # SA Injection
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+
+  # Immagine da ECR
+  image:
+    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
+    tag: v1.0.0
+    pullPolicy: Always 
+  
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+
+frontend:
+  # SA Injection
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+
+  # Immagine da ECR
+  image:
+    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
+    tag: v1.0.0
+    pullPolicy: Always
+    
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: "dev.progetto.teletubbies.com"
+    backendServicePort: 8080
+
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: "test.dev.decyda.com"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"

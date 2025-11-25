@@ -1,4 +1,10 @@
 # Configurazione Globale/Comune
+
+serviceAccount:
+  create: true
+  name: "" # Se vuoto, usa il nome generato dal template helper
+  imagePullSecrets: []
+
 global:
   # Base name override per tutte le risorse (es. se release è 'my-app', fullname diventa 'my-app-teletubbies')
   nameOverride: "teletubbies" 
@@ -22,7 +28,7 @@ db:
   
   image: 
     repository: mariadb
-    tag: 10.6.12
+    tag: v1.0.0
     pullPolicy: IfNotPresent 
     
   service:
