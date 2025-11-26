@@ -16,6 +16,9 @@ spec:
       labels:
         {{- include "backend.selectorLabels" . | nindent 8 }}
     spec:
+      # SA
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+
       # L'Init Container si occupa di attendere il DB e di eseguire la migrazione dello schema.
       initContainers:
       - name: initsql
