@@ -21,6 +21,9 @@ db:
   serviceAccount:
     name: "teletubbies-eks-deployer"
 
+  waitTimeout: 28800 # 8 ore
+  interactiveTimeout: 28800 # 8 ore
+
   # Immagine da ECR
   image: 
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
@@ -76,10 +79,10 @@ frontend:
   ingress:
     enabled: true
     className: "nginx"
-    host: "dev.progetto.teletubbies.com"
+    host: "teletubbies.dev.decyda.com"
     backendServicePort: 8080
 
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "test.dev.decyda.com"
+      external-dns.alpha.kubernetes.io/hostname: "teletubbies.dev.decyda.com"
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
