@@ -1,0 +1,78 @@
+# values Prod Environment
+
+global:
+  nameOverride: "teletubbies-prod"
+  labels:
+    # Environmental label
+    app.kubernetes.io/environment: prod 
+
+  # creation Account (IRSA)
+  serviceAccount:
+    create: true
+    name: "teletubbies-eks-deployer"
+
+    # IRSA annotation linking the SA to the IAM role "ecr-pull-images"
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
+
+# Extenal Database
+externalDb:
+  enabled: true
+  host: "decyda-dev-mariadb.c7w08masciuc.eu-south-1.rds.amazonaws.com"
+  port: 3306
+  name: "decyda-dev-mariadb"
+  username: "teletubbies_user_prod"
+
+  secret:
+    name: "teletubbies-prod-db-credentials" 
+  
+db:
+  # Disable Internal DB Subchart
+  enabled: false
+
+dbSecret:
+  # Block the Creation of the Secret
+  create: false 
+  
+backend:
+  replicas: 3
+  # SA Injection
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+
+  # Pull Immage from ECR Backend
+  image:
+    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
+    tag: 1.0.0
+    pullPolicy: Always 
+  
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+frontend:
+  replicas: 3
+  # SA Injection
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+
+  # Pull Immage from ECR Frontend
+  image:
+    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
+    tag: 1.0.0
+    pullPolicy: Always
+    
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: "teletubbies.prod.decyda.com"
+    backendServicePort: 8080
+
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: "teletubbies.prod.decyda.com"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true" 
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"

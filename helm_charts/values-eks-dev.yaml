@@ -1,4 +1,4 @@
-# values ambiente Dev
+# values Dev Environment
 
 global:
   nameOverride: "teletubbies-dev"
@@ -14,7 +14,9 @@ global:
     # Annotazione IRSA che collega il SA al Ruolo IAM "ecr-pull-images"
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
-      # ASSICURATI DI SOSTITUIRE <ACCOUNT_ID> CON L'ID REALE DEL TUO ACCOUNT AWS
+
+dbSecret:
+  create: true
 
 db:
   # SA Injection
@@ -27,7 +29,7 @@ db:
   # Immagine da ECR
   image: 
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always
     
   pvc:
@@ -54,7 +56,7 @@ backend:
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always 
   
   resources:
@@ -73,7 +75,7 @@ frontend:
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always
     
   ingress:

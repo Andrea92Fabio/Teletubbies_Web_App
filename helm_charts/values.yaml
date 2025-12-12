@@ -23,6 +23,9 @@ secret:
   dbPassword: "password"
   dbRootPassword: "rootpassword"
 
+dbSecret:
+  create: true
+
 # 1. SubChart DB
 db:
   enabled: true
