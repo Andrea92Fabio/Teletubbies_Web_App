@@ -15,6 +15,10 @@ global:
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
 
+  secret:
+    db:
+      name: "teletubbies-dev-db-secret"
+
 dbSecret:
   create: true
 

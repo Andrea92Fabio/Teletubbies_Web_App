@@ -34,17 +34,39 @@ spec:
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: >-
+                {{- if .Values.db.enabled }}
+                {{ .Values.global.secret.db.name }} # Percorso per DB Interno (Dev)
+                {{- else if .Values.externalDb.enabled }}
+                {{ .Values.externalDb.secret.name }} # Percorso per DB Esterno (Prod)
+                {{- else }}
+                {{ fail "Secret name cannot be determined." }}
+                {{- end }}
               key: DB_USER             
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: >-
+                {{- if .Values.db.enabled }}
+                {{ .Values.global.secret.db.name }} # Percorso per DB Interno (Dev)
+                {{- else if .Values.externalDb.enabled }}
+                {{ .Values.externalDb.secret.name }} # Percorso per DB Esterno (Prod)
+                {{- else }}
+                {{ fail "Secret name cannot be determined." }}
+                {{- end }}
               key: DB_PASSWORD
+
         # MARIADB_HOST è richiesto dal client mariadb per la connessione
         - name: MARIADB_HOST 
-          # Usiamo il nome del Service generato dal subchart DB
-          value: {{ include "db.fullname" . }} 
+          value: >-
+            {{- if .Values.db.enabled }} 
+            {{ include "db.fullname" . }} 
+            {{- else if .Values.externalDb.enabled }}
+            {{ .Values.externalDb.host }} 
+            {{- else }}
+            {{ fail "Una configurazione del database (interno o esterno) deve essere abilitata." }}
+            {{- end }}
+
         # DB_PORT (necessaria per lo script)
         - name: DB_PORT 
           # Accesso corretto al valore del Backend
@@ -63,7 +85,14 @@ spec:
         args:
           - |
             # Variabili locali per lo script
-            DB_HOST={{ include "db.fullname" . }}
+            DB_HOST={{/* Logica condizionale per l'host del DB */}}-
+            {{- if .Values.db.enabled -}}
+            {{ include "db.fullname" . }}
+            {{- else if .Values.externalDb.enabled -}}
+            {{ .Values.externalDb.host }}
+            {{- else -}}
+            {{ fail "Una configurazione del database (interno o esterno) deve essere abilitata." }}
+            {{- end }}
             DB_PORT=${DB_PORT}
             DB_NAME=${DB_NAME_FOR_SCRIPT}
             
@@ -107,8 +136,15 @@ spec:
         env: 
         # Variabili d'ambiente per il runtime del Backend
         - name: DB_HOST
-          # Usiamo il nome del Service generato dal subchart DB
-          value: "{{ include "db.fullname" . }}" 
+          # Usiamo il nome del Service generato dal subchart DB O l'host esterno
+          value: >-
+            {{- if .Values.db.enabled }} 
+            {{ include "db.fullname" . }} 
+            {{- else if .Values.externalDb.enabled }}
+            {{ .Values.externalDb.host }} 
+            {{- else }}
+            {{ fail "Una configurazione del database (interno o esterno) deve essere abilitata." }}
+            {{- end }}
         - name: DB_PORT
           # Accesso corretto al valore del Backend
           value: {{ .Values.dbPort | default 3306 | quote }}
@@ -118,12 +154,26 @@ spec:
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: >-
+                {{- if .Values.db.enabled }}
+                {{ .Values.global.secret.db.name }}
+                {{- else if .Values.externalDb.enabled }}
+                {{ .Values.externalDb.secret.name }}
+                {{- else }}
+                {{ fail "Secret name cannot be determined." }}
+                {{- end }}
               key: DB_USER             
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: >-
+                {{- if .Values.db.enabled }}
+                {{ .Values.global.secret.db.name }}
+                {{- else if .Values.externalDb.enabled }}
+                {{ .Values.externalDb.secret.name }}
+                {{- else }}
+                {{ fail "Secret name cannot be determined." }}
+                {{- end }}
               key: DB_PASSWORD
               
         # Liveness Probe (tempi aumentati)
@@ -131,8 +181,8 @@ spec:
           httpGet:
             path: {{ .Values.healthPath | default "/health" }}
             port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: 90 # Aumentato
-          periodSeconds: 20       # Aumentato
+          initialDelaySeconds: 90 
+          periodSeconds: 20       
           timeoutSeconds: 15
         
         # Readiness Probe (tempi aumentati)
@@ -140,13 +190,18 @@ spec:
           httpGet:
             path: {{ .Values.healthPath | default "/health" }}
             port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: 10 # Aumentato
-          periodSeconds: 10       # Aumentato
+          initialDelaySeconds: 10 
+          periodSeconds: 10       
           timeoutSeconds: 15
 
       # DEFINIZIONE DEI VOLUMI
       volumes:
       - name: db-schema-migration
         configMap:
-          # Nomenclatura corretta per referenziare la ConfigMap del DB
-          name: {{ include "db.fullname" . }}-schema-script
+          # Nomenclatura ConfigMap del DB
+          name: >-
+            {{- if .Values.db.enabled }}
+            {{ include "db.fullname" . }}-schema-script
+            {{- else }}
+            {{ include "backend.fullname" . }}-external-schema-script
+            {{- end }}

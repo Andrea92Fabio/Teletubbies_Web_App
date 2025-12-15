@@ -21,10 +21,10 @@ externalDb:
   host: "decyda-dev-mariadb.c7w08masciuc.eu-south-1.rds.amazonaws.com"
   port: 3306
   name: "decyda-dev-mariadb"
-  username: "teletubbies_user_prod"
+  username: "devuser"
 
   secret:
-    name: "teletubbies-prod-db-credentials" 
+    name: "teletubbies-prod-db-credentials"
   
 db:
   # Disable Internal DB Subchart
