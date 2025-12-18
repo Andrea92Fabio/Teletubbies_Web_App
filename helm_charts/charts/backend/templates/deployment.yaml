@@ -1,12 +1,10 @@
-apiVersion: apps/v1 # Backend Deployment
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "backend.fullname" . }}
   labels:
     {{- include "backend.labels" . | nindent 4 }}
 spec:
-  # Uso del valore locale (replicaCount è al top level del values.yaml del Backend)
-  # Usiamo il default per evitare errori se la sezione 'backend' nel values globale non ha 'replicaCount'
   replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
@@ -16,114 +14,53 @@ spec:
       labels:
         {{- include "backend.selectorLabels" . | nindent 8 }}
     spec:
-      # SA
       serviceAccountName: {{ .Values.global.serviceAccount.name }}
-
-      # L'Init Container si occupa di attendere il DB e di eseguire la migrazione dello schema.
+      {{- if .Values.initDbMigration }}
       initContainers:
       - name: initsql
-        # Immagine client MariaDB per eseguire lo script di migrazione
         image: {{ .Values.initDbImage | default "mariadb:10.6.12" }}
         imagePullPolicy: IfNotPresent
-        
         securityContext:
           runAsUser: 0
-
         env:
-        # Credenziali per accedere al DB (coerenti con il Secret)
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
-              name: >-
-                {{- if .Values.db.enabled }}
-                {{ .Values.global.secret.db.name }} # Percorso per DB Interno (Dev)
-                {{- else if .Values.externalDb.enabled }}
-                {{ .Values.externalDb.secret.name }} # Percorso per DB Esterno (Prod)
-                {{- else }}
-                {{ fail "Secret name cannot be determined." }}
-                {{- end }}
+              name: {{ .Values.global.secret.db.name }}
               key: DB_USER             
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: >-
-                {{- if .Values.db.enabled }}
-                {{ .Values.global.secret.db.name }} # Percorso per DB Interno (Dev)
-                {{- else if .Values.externalDb.enabled }}
-                {{ .Values.externalDb.secret.name }} # Percorso per DB Esterno (Prod)
-                {{- else }}
-                {{ fail "Secret name cannot be determined." }}
-                {{- end }}
+              name: {{ .Values.global.secret.db.name }}
               key: DB_PASSWORD
-
-        # MARIADB_HOST è richiesto dal client mariadb per la connessione
         - name: MARIADB_HOST 
-          value: >-
-            {{- if .Values.db.enabled }} 
-            {{ include "db.fullname" . }} 
-            {{- else if .Values.externalDb.enabled }}
-            {{ .Values.externalDb.host }} 
-            {{- else }}
-            {{ fail "Una configurazione del database (interno o esterno) deve essere abilitata." }}
-            {{- end }}
-
-        # DB_PORT (necessaria per lo script)
+          value: {{ .Values.global.db.host | quote }}
         - name: DB_PORT 
-          # Accesso corretto al valore del Backend
-          value: {{ .Values.dbPort | default 3306 | quote }}
-        
-        # Variabile per lo script
-        - name: DB_NAME_FOR_SCRIPT
-          # Accesso corretto al valore del Backend
-          value: {{ .Values.dbName | default "san_martino_friendship_day" }}
-
+          value: {{ .Values.global.db.port | default 3306 | quote }}
+        - name: DB_NAME
+          value: {{ .Values.global.db.name | quote }}
         volumeMounts:
         - name: db-schema-migration
           mountPath: /schema 
-
         command: ["/bin/bash", "-c"]
         args:
           - |
-            # Variabili locali per lo script
-            DB_HOST={{/* Logica condizionale per l'host del DB */}}-
-            {{- if .Values.db.enabled -}}
-            {{ include "db.fullname" . }}
-            {{- else if .Values.externalDb.enabled -}}
-            {{ .Values.externalDb.host }}
-            {{- else -}}
-            {{ fail "Una configurazione del database (interno o esterno) deve essere abilitata." }}
-            {{- end }}
-            DB_PORT=${DB_PORT}
-            DB_NAME=${DB_NAME_FOR_SCRIPT}
-            
-            echo "1. Waiting for DB service $DB_HOST:$DB_PORT to be available..."
-            # Attesa fino a quando il client mariadb riesce a connettersi usando le credenziali standard.
-            until mariadb -h $DB_HOST -P $DB_PORT -u ${DB_USER} -p${DB_PASSWORD} -e "SELECT 1;" > /dev/null 2>&1; do
+            echo "1. In attesa che il database ${MARIADB_HOST}:${DB_PORT} sia raggiungibile..."
+            until mariadb -h ${MARIADB_HOST} -P ${DB_PORT} -u ${DB_USER} -p${DB_PASSWORD} -e "SELECT 1;" > /dev/null 2>&1; do
               echo "Database non ancora pronto, attesa 3 secondi..."
               sleep 3
             done
-            echo "Database pronto e accessibile con le credenziali fornite."
 
-            echo "2. Running schema migration (init.sql) on $DB_NAME..."
-            # Esegue la migrazione. Se il comando fallisce (exit code != 0), il container fallisce.
-            mariadb -h $DB_HOST -P $DB_PORT -u ${DB_USER} -p${DB_PASSWORD} $DB_NAME < /schema/init.sql
+            echo "2. Database pronto. Caricamento dello schema init.sql nel database ${DB_NAME}..."
+            mariadb -h ${MARIADB_HOST} -P ${DB_PORT} -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < /schema/init.sql
             
-            if [ $? -ne 0 ]; then
-                echo "ERRORE: La migrazione dello schema è fallita. Uscita con codice 1."
+            if [ $? -eq 0 ]; then
+                echo "Schema caricato con successo."
+            else
+                echo "ERRORE durante il caricamento dello schema."
                 exit 1
             fi
-            
-            echo "3. Verifying required tables (e.g., 'customers')..."
-            # Verifica che la tabella "customers" esista dopo la migrazione.
-            mariadb -h $DB_HOST -P $DB_PORT -u ${DB_USER} -p${DB_PASSWORD} $DB_NAME -e "SELECT 1 FROM customers;" > /dev/null 2>&1
-            
-            if [ $? -ne 0 ]; then
-                echo "ERRORE: La tabella 'customers' non è stata trovata o non è accessibile. Uscita con codice 1."
-                exit 1
-            fi
-            
-            echo "DB schema loaded successfully. Init Container Complete."
-            
+      {{- end }}
       containers:
       - name: backend-container
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -132,76 +69,39 @@ spec:
         - containerPort: {{ .Values.service.targetPort }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
-          
         env: 
-        # Variabili d'ambiente per il runtime del Backend
         - name: DB_HOST
-          # Usiamo il nome del Service generato dal subchart DB O l'host esterno
-          value: >-
-            {{- if .Values.db.enabled }} 
-            {{ include "db.fullname" . }} 
-            {{- else if .Values.externalDb.enabled }}
-            {{ .Values.externalDb.host }} 
-            {{- else }}
-            {{ fail "Una configurazione del database (interno o esterno) deve essere abilitata." }}
-            {{- end }}
+          value: {{ .Values.global.db.host | quote }}
         - name: DB_PORT
-          # Accesso corretto al valore del Backend
-          value: {{ .Values.dbPort | default 3306 | quote }}
+          value: {{ .Values.global.db.port | default 3306 | quote }}
         - name: DB_NAME
-          # Accesso corretto al valore del Backend
-          value: {{ .Values.dbName | default "san_martino_friendship_day" | quote }}
+          value: {{ .Values.global.db.name | quote }}
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
-              name: >-
-                {{- if .Values.db.enabled }}
-                {{ .Values.global.secret.db.name }}
-                {{- else if .Values.externalDb.enabled }}
-                {{ .Values.externalDb.secret.name }}
-                {{- else }}
-                {{ fail "Secret name cannot be determined." }}
-                {{- end }}
+              name: {{ .Values.global.secret.db.name }}
               key: DB_USER             
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: >-
-                {{- if .Values.db.enabled }}
-                {{ .Values.global.secret.db.name }}
-                {{- else if .Values.externalDb.enabled }}
-                {{ .Values.externalDb.secret.name }}
-                {{- else }}
-                {{ fail "Secret name cannot be determined." }}
-                {{- end }}
+              name: {{ .Values.global.secret.db.name }}
               key: DB_PASSWORD
-              
-        # Liveness Probe (tempi aumentati)
         livenessProbe:
           httpGet:
             path: {{ .Values.healthPath | default "/health" }}
             port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: 90 
-          periodSeconds: 20       
+          initialDelaySeconds: 90
+          periodSeconds: 20
           timeoutSeconds: 15
-        
-        # Readiness Probe (tempi aumentati)
         readinessProbe:
           httpGet:
             path: {{ .Values.healthPath | default "/health" }}
             port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: 10 
-          periodSeconds: 10       
+          initialDelaySeconds: 10
+          periodSeconds: 10
           timeoutSeconds: 15
 
-      # DEFINIZIONE DEI VOLUMI
       volumes:
       - name: db-schema-migration
         configMap:
-          # Nomenclatura ConfigMap del DB
-          name: >-
-            {{- if .Values.db.enabled }}
-            {{ include "db.fullname" . }}-schema-script
-            {{- else }}
-            {{ include "backend.fullname" . }}-external-schema-script
-            {{- end }}
+          name: {{ include "db.fullname" . }}-schema-script

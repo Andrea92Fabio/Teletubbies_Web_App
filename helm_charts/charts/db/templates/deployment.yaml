@@ -54,8 +54,8 @@ spec:
         - name: db-persistent-storage
           mountPath: /var/lib/mysql
         {{- end }}
-        - name: schema-volume
-          mountPath: /docker-entrypoint-initdb.d
+        #- name: schema-volume
+        #  mountPath: /docker-entrypoint-initdb.d
           
         resources:
           {{- toYaml .Values.resources | nindent 12 }} # Indentazione 12
@@ -66,10 +66,10 @@ spec:
         persistentVolumeClaim:
           claimName: {{ include "db.fullname" . }}-pvc
       {{- end }}
-      - name: schema-volume
-        configMap:
-          name: {{ include "db.fullname" . }}-schema-script
-          items:
-            - key: init.sql 
-              path: init.sql
+      #- name: schema-volume
+      #  configMap:
+      #    name: {{ include "db.fullname" . }}-schema-script
+      #    items:
+      #      - key: init.sql 
+      #        path: init.sql
 {{- end }}

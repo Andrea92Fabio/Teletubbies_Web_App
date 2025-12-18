@@ -1,45 +1,78 @@
 {{/*
-=== WRAPPER PER FUNZIONI GLOBALI (NECESSARIO) ===
-Queste funzioni permettono al subchart di accedere alle definizioni del Chart padre.
+=== DEFINIZIONI NOMI (FULLNAME) ===
+Queste funzioni generano i nomi univoci per le risorse nel cluster.
+Usiamo .Release.Name come base per evitare ripetizioni tipo "teletubbies-prod-teletubbies-prod".
 */}}
-{{- define "teletubbies-web-app.labels" -}}
-{{- template "teletubbies-web-app.labels" . -}}
+
+{{/* Fullname per il backend */}}
+{{- define "backend.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-backend" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 
-{{- define "teletubbies-web-app.selectorLabels" -}}
-{{- template "teletubbies-web-app.selectorLabels" . -}}
+{{/* Fullname per il frontend */}}
+{{- define "frontend.fullname" -}}
+{{- if .Values.frontend.fullnameOverride -}}
+{{- .Values.frontend.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-frontend" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 
-{{- define "teletubbies-web-app.fullname" -}}
-{{- template "teletubbies-web-app.fullname" . -}}
+{{/* Fullname per il componente Database (usato per la ConfigMap dello schema) */}}
+{{- define "db.fullname" -}}
+{{- printf "%s-db" .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
-
 
 {{/*
-Common labels (eredita e aggiunge componente)
+=== ETICHETTE (LABELS) ===
 */}}
+
+{{/* Labels comuni per il Backend */}}
 {{- define "backend.labels" -}}
-{{ include "teletubbies-web-app.labels" . }}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+{{ include "backend.selectorLabels" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.global.labels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
-{{/*
-Selector labels (eredita e aggiunge componente)
-*/}}
+{{/* Selector labels per il Backend */}}
 {{- define "backend.selectorLabels" -}}
-{{ include "teletubbies-web-app.selectorLabels" . }}
+app.kubernetes.io/name: teletubbies-app
+app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/component: backend
 {{- end }}
 
-{{/*
-Fullname per il subchart Backend
-*/}}
-{{- define "backend.fullname" -}}
-{{- printf "%s-backend" (include "teletubbies-web-app.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{/* Labels comuni per il componente DB */}}
+{{- define "db.labels" -}}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+app.kubernetes.io/name: teletubbies-app
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: db
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.global.labels }}
+{{ toYaml . }}
+{{- end }}
 {{- end }}
 
-{{/*
-Nome del Chart.
-*/}}
-{{- define "backend.name" -}}
-{{- default .Chart.Name | trunc 63 | trimSuffix "-" }}
+{{/* Labels comuni per il Frontend */}}
+{{- define "frontend.labels" -}}
+helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+{{ include "frontend.selectorLabels" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Values.global.labels }}
+{{ toYaml . }}
+{{- end }}
+{{- end }}
+
+{{/* Selector labels per il Frontend */}}
+{{- define "frontend.selectorLabels" -}}
+app.kubernetes.io/name: teletubbies-app
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: frontend
 {{- end }}

@@ -1,78 +1,86 @@
-# values Prod Environment
-
+# values-eks-prod.yaml
 global:
   nameOverride: "teletubbies-prod"
   labels:
-    # Environmental label
+    # Etichetta per l'ambiente di produzione
     app.kubernetes.io/environment: prod 
 
-  # creation Account (IRSA)
+  db:
+    # Disabilita il subchart del database interno per usare RDS
+    enabled: false
+    host: "decyda-dev-mariadb.c7w08masciuc.eu-south-1.rds.amazonaws.com"
+    port: 3306
+    name: "decyda_dev_db"
+    username: "devuser"
+
+  secret:
+    db:
+      name: "secret-rds-prod"
+
+  # Configurazione Account di Servizio (IRSA)
   serviceAccount:
     create: true
     name: "teletubbies-eks-deployer"
-
-    # IRSA annotation linking the SA to the IAM role "ecr-pull-images"
+    # Annotazione IRSA che collega il SA al Ruolo IAM per il pull delle immagini da ECR
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
 
-# Extenal Database
-externalDb:
-  enabled: true
-  host: "decyda-dev-mariadb.c7w08masciuc.eu-south-1.rds.amazonaws.com"
-  port: 3306
-  name: "decyda-dev-mariadb"
-  username: "devuser"
-
-  secret:
-    name: "teletubbies-prod-db-credentials"
-  
+# Disabilita esplicitamente il subchart db
 db:
-  # Disable Internal DB Subchart
   enabled: false
 
+# Disabilita la creazione del secret locale (usiamo quello manuale per RDS)
 dbSecret:
-  # Block the Creation of the Secret
-  create: false 
-  
+  create: false
+
 backend:
-  replicas: 3
+  # In produzione scaliamo a 3 repliche per alta disponibilità
+  replicas: 1
+  # Abilitazione della migrazione dello schema su RDS
+  initDbMigration: true
+  # Forza la creazione dello script SQL anche se il DB locale è spento
+  createSchemaConfigMap: true
   # SA Injection
   serviceAccount:
     name: "teletubbies-eks-deployer"
-
-  # Pull Immage from ECR Backend
+  # Configurazione Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
-    tag: 1.0.0
+    tag: v1.0.0
     pullPolicy: Always 
-  
+  # Risorse aumentate per la produzione
   resources:
     requests:
-      cpu: "500m"
-      memory: "1Gi"
+      cpu: "100m"
+      memory: "256Mi"
     limits:
       cpu: "1000m"
-      memory: "2Gi"
+      memory: "512Mi"
 
 frontend:
-  replicas: 3
+  replicas: 1
   # SA Injection
   serviceAccount:
     name: "teletubbies-eks-deployer"
-
-  # Pull Immage from ECR Frontend
+  # Configurazione Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
-    tag: 1.0.0
+    tag: v1.0.0
     pullPolicy: Always
-    
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+  # Configurazione Ingress per il dominio di produzione
   ingress:
     enabled: true
     className: "nginx"
-    host: "teletubbies.prod.decyda.com"
+    host: "teletubbies-prod.dev.decyda.com"
     backendServicePort: 8080
-
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "teletubbies.prod.decyda.com"
-      nginx.ingress.kubernetes.io/ssl-redirect: "true" 
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      external-dns.alpha.kubernetes.io/hostname: "teletubbies-prod.dev.decyda.com"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "false"

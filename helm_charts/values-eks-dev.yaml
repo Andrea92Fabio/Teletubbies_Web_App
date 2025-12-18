@@ -6,15 +6,20 @@ global:
     # Etichetta ambiente
     app.kubernetes.io/environment: dev 
 
+  # Inserita la configurazione per il DB HOST che il Backend utilizzerà
+  db:
+    enabled: true
+    # L'host punta al Service interno del subchart 'db'
+    host: "teletubbiesweb-app-dev-db-service" 
+    port: 3306 
+    name: "san_martino_friendship_day" # Nome del DB usato dall'applicazione
   # creation Account (IRSA)
   serviceAccount:
     create: true
     name: "teletubbies-eks-deployer"
-
     # Annotazione IRSA che collega il SA al Ruolo IAM "ecr-pull-images"
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
-
   secret:
     db:
       name: "teletubbies-dev-db-secret"
@@ -26,23 +31,19 @@ db:
   # SA Injection
   serviceAccount:
     name: "teletubbies-eks-deployer"
-
   waitTimeout: 28800 # 8 ore
   interactiveTimeout: 28800 # 8 ore
-
   # Immagine da ECR
   image: 
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
     tag: v1.0.0
     pullPolicy: Always
-    
   pvc:
     # Override PVC: Garantisce la persistenza su EKS
     enabled: true
     storage: 5Gi
     # Override PVC: Specifica che deve essere usato il tipo di volume EBS GP2
     storageClassName: "gp2"
-    
   resources:
     requests:
       # Risorse ridotte per minikube/dev
@@ -53,16 +54,16 @@ db:
       memory: "512Mi"
 
 backend:
+  # Abilitazione della ConfigMap e dell'Init Container per la migrazione dello schema in DEV
+  initDbMigration: true 
   # SA Injection
   serviceAccount:
     name: "teletubbies-eks-deployer"
-
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
     tag: v1.0.0
     pullPolicy: Always 
-  
   resources:
     requests:
       cpu: "100m"
@@ -75,19 +76,16 @@ frontend:
   # SA Injection
   serviceAccount:
     name: "teletubbies-eks-deployer"
-
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
     tag: v1.0.0
     pullPolicy: Always
-    
   ingress:
     enabled: true
     className: "nginx"
     host: "teletubbies.dev.decyda.com"
     backendServicePort: 8080
-
     annotations:
       external-dns.alpha.kubernetes.io/hostname: "teletubbies.dev.decyda.com"
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
