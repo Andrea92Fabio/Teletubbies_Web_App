@@ -7,6 +7,8 @@ metadata:
     {{- include "db.labels" . | nindent 4 }}
     app.kubernetes.io/instance: {{ .Release.Name | quote }}
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "db.selectorLabels" . | nindent 6 }} # Indentazione 6
@@ -28,7 +30,7 @@ spec:
         
         env:
         - name: MARIADB_DATABASE
-          value: {{ .Values.databaseName | quote }}
+          value: {{ .Values.global.db.name | quote }}
         - name: MARIADB_USER
           valueFrom:
             secretKeyRef:
@@ -50,7 +52,7 @@ spec:
           value: {{ .Values.interactiveTimeout | quote }}
           
         volumeMounts:
-        {{- if .Values.pvc.enabled }}
+        {{- if .Values.global.pvc.enabled }}
         - name: db-persistent-storage
           mountPath: /var/lib/mysql
         {{- end }}
@@ -61,7 +63,7 @@ spec:
           {{- toYaml .Values.resources | nindent 12 }} # Indentazione 12
           
       volumes: 
-      {{- if .Values.db.pvc.enabled }}
+      {{- if .Values.global.pvc.enabled }}
       - name: db-persistent-storage
         persistentVolumeClaim:
           claimName: {{ include "db.fullname" . }}-pvc

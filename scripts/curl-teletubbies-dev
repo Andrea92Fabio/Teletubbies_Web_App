@@ -1,0 +1,4 @@
+curl 'https://teletubbies.dev.decyda.com/api/submission' \
+  -H 'Referer: https://teletubbies.dev.decyda.com/' \
+  -H 'Content-type: application/json' \
+  --data-raw '{"name":"Nome","surname":"Cognome","gender":"man","email":"rrrr@gmail.com","residencyCountry":"san marino","fiscalCode":"TRMCST88M30D444F","residencyZipCode":"12345","residencyAddress":"via ciao","shipCountry":"san marino","shipZipCode":"22345","shipAddress":"via vi","privacy":true,"rules":true,"birthDate":"1988-05-30","phoneNumber":"23456788","residencyProvince":"AL","shipProvince":"AL"}'

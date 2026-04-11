@@ -43,3 +43,22 @@ Nome del Chart.
 {{- define "backend.name" -}}
 {{- default .Chart.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
+
+{{/*
+Fullname per il subchart DB
+*/}}
+{{- define "db.fullname" -}}
+{{- if .Values.global.db.enabled -}}
+{{- printf "%s-db" (include "teletubbies-web-app.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s" .Values.global.backend.db.name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Common labels (eredita e aggiunge componente)
+*/}}
+{{- define "db.labels" -}}
+{{ include "teletubbies-web-app.labels" . }}
+{{- end }}
+

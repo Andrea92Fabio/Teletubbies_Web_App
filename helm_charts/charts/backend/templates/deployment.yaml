@@ -34,26 +34,25 @@ spec:
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: secret-rds
               key: DB_USER             
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: secret-rds
               key: DB_PASSWORD
         # MARIADB_HOST è richiesto dal client mariadb per la connessione
         - name: MARIADB_HOST 
           # Usiamo il nome del Service generato dal subchart DB
-          value: {{ include "db.fullname" . }} 
+          value:  {{ include "db.fullname" . | quote }}
         # DB_PORT (necessaria per lo script)
         - name: DB_PORT 
           # Accesso corretto al valore del Backend
-          value: {{ .Values.dbPort | default 3306 | quote }}
-        
+          value:  {{ .Values.global.db.port | default 3306 | quote }}
         # Variabile per lo script
         - name: DB_NAME_FOR_SCRIPT
           # Accesso corretto al valore del Backend
-          value: {{ .Values.dbName | default "san_martino_friendship_day" }}
+          value:  {{ .Values.global.db.name | default "san_martino_friendship_day" }}
 
         volumeMounts:
         - name: db-schema-migration
@@ -63,9 +62,13 @@ spec:
         args:
           - |
             # Variabili locali per lo script
-            DB_HOST={{ include "db.fullname" . }}
+            DB_HOST=${MARIADB_HOST}
             DB_PORT=${DB_PORT}
             DB_NAME=${DB_NAME_FOR_SCRIPT}
+
+            echo ${DB_PASSWORD} ${DB_HOST} ${DB_NAME}
+            echo "========================"
+            echo "VAR SET?"
             
             echo "1. Waiting for DB service $DB_HOST:$DB_PORT to be available..."
             # Attesa fino a quando il client mariadb riesce a connettersi usando le credenziali standard.
@@ -108,22 +111,22 @@ spec:
         # Variabili d'ambiente per il runtime del Backend
         - name: DB_HOST
           # Usiamo il nome del Service generato dal subchart DB
-          value: "{{ include "db.fullname" . }}" 
+          value: {{ include "db.fullname" . | quote }}
         - name: DB_PORT
           # Accesso corretto al valore del Backend
-          value: {{ .Values.dbPort | default 3306 | quote }}
+          value: {{ .Values.global.db.port | default 3306 | quote }}
         - name: DB_NAME
           # Accesso corretto al valore del Backend
-          value: {{ .Values.dbName | default "san_martino_friendship_day" | quote }}
+          value: {{ .Values.global.db.name | default "san_martino_friendship_day" }}
         - name: DB_USER 
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: secret-rds
               key: DB_USER             
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.secret.db.name }}
+              name: secret-rds
               key: DB_PASSWORD
               
         # Liveness Probe (tempi aumentati)

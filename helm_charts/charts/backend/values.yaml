@@ -17,6 +17,7 @@ backend:
 
   # Variabili d'ambiente per la connessione al DB
   db:
+    enabled: true
     host: teletubbies-db # Nome del Service del DB
     port: 3306 
     name: san_martino_friendship_day # Nome del Database
@@ -42,3 +43,9 @@ backend:
       initialDelaySeconds: 30
       periodSeconds: 20
       
+
+global:
+  db:
+    enabled: true
+
+

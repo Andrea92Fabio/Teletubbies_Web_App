@@ -18,23 +18,14 @@ Queste funzioni permettono al subchart di accedere alle definizioni del Chart pa
 {{/*
 Common labels (eredita e aggiunge componente)
 */}}
-{{- define "db.labels" -}}
-{{ include "teletubbies-web-app.labels" . }}
+{{- define "db.labels" }}
 {{- end }}
 
 {{/*
 Selector labels (eredita e aggiunge componente)
 */}}
-{{- define "db.selectorLabels" -}}
-{{ include "teletubbies-web-app.selectorLabels" . }}
+{{- define "db.selectorLabels" }}
 app.kubernetes.io/component: db
-{{- end }}
-
-{{/*
-Fullname per il subchart DB
-*/}}
-{{- define "db.fullname" -}}
-{{- printf "%s-db" (include "teletubbies-web-app.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*

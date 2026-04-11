@@ -1,10 +1,10 @@
-# values ambiente Dev
+# values ambiente Prod
 
 global:
-  nameOverride: "teletubbies-dev"
+  nameOverride: "teletubbies-prod"
   labels:
     # Etichetta ambiente
-    app.kubernetes.io/environment: dev 
+    app.kubernetes.io/environment: prod
 
   # creation Account (IRSA)
   serviceAccount:
@@ -14,40 +14,15 @@ global:
     # Annotazione IRSA che collega il SA al Ruolo IAM "ecr-pull-images"
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::089648475292:role/ecr-pull-images"
-      # ASSICURATI DI SOSTITUIRE <ACCOUNT_ID> CON L'ID REALE DEL TUO ACCOUNT AWS
   db:
-    enabled: true
+    enabled: false
+    host: "decyda-dev-mariadb.c7w08masciuc.eu-south-1.rds.amazonaws.com"
+    name: "decyda_dev_db"
+    port: 3306
+
+# Disabilita la creazione del secret locale (usiamo quello manuale per RDS)
 dbSecret:
-  create: true
-db:
-  # SA Injection
-  serviceAccount:
-    name: "teletubbies-eks-deployer"
-
-  waitTimeout: 28800 # 8 ore
-  interactiveTimeout: 28800 # 8 ore
-
-  # Immagine da ECR
-  image: 
-    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
-    # tag: v1.0.0
-    pullPolicy: Always
-    
-  pvc:
-    # Override PVC: Garantisce la persistenza su EKS
-    enabled: true
-    storage: 5Gi
-    # Override PVC: Specifica che deve essere usato il tipo di volume EBS GP2
-    storageClassName: "gp2"
-    
-  resources:
-    requests:
-      # Risorse ridotte per minikube/dev
-      cpu: "100m"
-      memory: "256Mi"
-    limits:
-      cpu: "250m"
-      memory: "512Mi"
+  create: false
 
 backend:
   # SA Injection
@@ -57,7 +32,7 @@ backend:
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always 
   
   resources:
@@ -76,16 +51,16 @@ frontend:
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always
     
   ingress:
     enabled: true
     className: "nginx"
-    host: "teletubbies.dev.decyda.com"
+    host: "teletubbies-prod.dev.decyda.com"
     backendServicePort: 8080
 
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "teletubbies.dev.decyda.com"
+      external-dns.alpha.kubernetes.io/hostname: "teletubbies-prod.dev.decyda.com"
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
       nginx.ingress.kubernetes.io/force-ssl-redirect: "false"

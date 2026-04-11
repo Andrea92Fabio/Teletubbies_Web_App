@@ -8,14 +8,29 @@ global:
     app.kubernetes.io/instance: ""
   secret:
     db:
+      create: true
       # Nome del Secret che sarà creato nel chart radice
-      name: "teletubbies-db-creds" 
+      name: "secret-rds" 
 
   serviceAccount:
     create: true
     name: ""
     imagePullSecrets: []
     annotations: {}      
+
+  backend:
+    db:
+     name: ""
+
+  pvc:
+   enabled: true
+
+  db:
+    enabled: true
+    host: "teletubbies-db"
+    name: "san_martino_friendship_day"
+    port: 3306
+
       
 # Secret
 secret:
@@ -36,8 +51,7 @@ db:
     port: 3306
     targetPort: 3306
     type: ClusterIP
-
-  databaseName: san_martino_friendship_day
+    
   waitTimeout: "300"
   interactiveTimeout: "300"
   resources:
@@ -70,10 +84,6 @@ backend:
     
   healthPath: "/health" 
   initDbImage: "mariadb:10.6.12" 
-  
-  # Service Host DB (nome-release-db)
-  dbHost: "{{ .Release.Name }}-teletubbies-db" 
-  dbPort: 3306
   
   resources:
     requests:

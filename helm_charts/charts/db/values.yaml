@@ -14,7 +14,7 @@ db:
     type: ClusterIP
 
   # Deployment
-  databaseName: san_martino_friendship_day
+  name: san_martino_friendship_day
   waitTimeout: "300"
   interactiveTimeout: "300"
   resources:
@@ -26,7 +26,7 @@ db:
       memory: "1Gi"
 
   # Persistent Volume Claim
-  pvc:
-    enabled: true
-    storage: 5Gi
-    accessModes: ReadWriteOnce
+pvc:
+  enabled: true
+  storage: 5Gi
+  accessModes: ReadWriteOnce
