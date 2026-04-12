@@ -28,7 +28,7 @@ db:
   enabled: true
   
   image: 
-    repository: mariadb
+    repository: teletubbies-db
     tag: v1.0.0
     pullPolicy: IfNotPresent 
     
@@ -52,6 +52,7 @@ db:
     enabled: true
     storage: 5Gi
     accessModes: ReadWriteOnce
+    storageClassName: "standard"
 
 # 2. SubChart Backend
 backend:
@@ -60,7 +61,7 @@ backend:
   
   image:
     repository: teletubbies-backend
-    tag: v1.0.0
+    tag: v1.1.2
     pullPolicy: IfNotPresent
     
   service:

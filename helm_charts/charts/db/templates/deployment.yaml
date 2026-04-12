@@ -61,7 +61,7 @@ spec:
           {{- toYaml .Values.resources | nindent 12 }} # Indentazione 12
           
       volumes: 
-      {{- if .Values.db.pvc.enabled }}
+      {{- if .Values.pvc.enabled }}
       - name: db-persistent-storage
         persistentVolumeClaim:
           claimName: {{ include "db.fullname" . }}-pvc

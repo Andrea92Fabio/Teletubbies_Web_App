@@ -10,6 +10,12 @@ import it.ifts.ifoa.teletubbies.service.MailService;
 import it.ifts.ifoa.teletubbies.service.UserConfirmationService;
 import it.ifts.ifoa.teletubbies.service.UserSubmissionService;
 
+// Import aggiuntivi per il monitoraggio
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.*;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,13 +28,16 @@ import static spark.Spark.*;
 
 public class App {
     // Configurazioni da variabili d'ambiente con valori di default
-    public final static LocalDateTime START_CONTEST = LocalDateTime.of(2025, Month.JUNE, 1, 9, 0);
-    public final static LocalDateTime END_CONTEST = LocalDateTime.of(2025, Month.JULY, 8, 9, 0);
+    public final static LocalDateTime START_CONTEST = LocalDateTime.of(2000, Month.JUNE, 1, 9, 0);
+    public final static LocalDateTime END_CONTEST = LocalDateTime.of(2100, Month.JULY, 8, 9, 0);
 
     // Porta configurabile tramite variabile d'ambiente
     private final static int SERVER_PORT = Integer.parseInt(
             System.getenv("SERVER_PORT") != null ? System.getenv("SERVER_PORT") : "8080"
     );
+
+    // Registro per le metriche di Prometheus
+    private final PrometheusMeterRegistry prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
     ConnectionPool pool;
     UserRepository userRepository;
@@ -61,6 +70,12 @@ public class App {
         // Configurazione porta del server
         port(SERVER_PORT);
 
+        new JvmMemoryMetrics().bindTo(prometheusMeterRegistry);
+        new JvmGcMetrics().bindTo(prometheusMeterRegistry);
+        new ProcessorMetrics().bindTo(prometheusMeterRegistry);
+        new JvmThreadMetrics().bindTo(prometheusMeterRegistry);
+        new ClassLoaderMetrics().bindTo(prometheusMeterRegistry);
+
         this.emailExecutor = Executors.newFixedThreadPool(4);
 
         Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new JsonDeserializer<LocalDate>() {
@@ -71,13 +86,14 @@ public class App {
         }).create();
 
         this.middleware = new Middleware(gson);
-
         this.middleware.enableCORS();
         this.middleware.handleRequestBeforeOrAfterContest();
 
         this.pool = ConnectionPool.getInstance();
 
         this.userRepository = new UserRepository(pool);
+
+        this.mailService = new MailService();
 
         this.userSubmissionService = new UserSubmissionService(userRepository);
         this.userConfirmationService = new UserConfirmationService(userRepository, emailExecutor);
@@ -107,6 +123,12 @@ public class App {
     private void run() {
         submissionsController.initSubmissionEndpoint();
         confirmationController.initConfirmationEndpoint();
+
+        //ENDPOINT per il monitoraggio (Prometheus)
+        get("/actuator/prometheus", (req, res) -> {
+            res.type("text/plain; version=0.0.4; charset=utf-8");
+            return prometheusMeterRegistry.scrape();
+        });
 
         // Questo endpoint serve per verificare che il server sia attivo e risponda
         // È molto utile per gli script di attesa nelle pipeline di CI/CD.
