@@ -1,0 +1,46 @@
+# Sezione globale per variabili condivise
+nameOverride: ""
+fullnameOverride: ""
+
+global:
+  secret:
+    db:
+      name: "db-secret-name" # Nome del secret creato esternamente o nel parent
+  serviceAccount:
+    name: "default"
+
+db:
+  enabled: true
+
+  # Immagine
+  image: 
+    repository: teletubbies-db
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+    
+  # Service
+  service:
+    port: 3306
+    targetPort: 3306
+    type: ClusterIP
+
+  # Configurazione Database
+  databaseName: san_martino_friendship_day
+  waitTimeout: "300"
+  interactiveTimeout: "300"
+  
+  # Risorse computazionali
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  # Configurazione Storage per lo StatefulSet
+  pvc:
+    enabled: true
+    storage: 5Gi
+    accessModes: ReadWriteOnce
+    # storageClassName: "" # Opzionale: definire se necessario

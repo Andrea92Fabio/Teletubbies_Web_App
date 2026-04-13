@@ -1,0 +1,31 @@
+# Backend-Values-Minikube
+replicaCount: 1
+
+image:
+  repository: "teletubbies-backend"
+  tag: "latest"
+  pullPolicy: Never # Usa l'immagine caricata nel demone docker di minikube
+
+initDbImage: "mariadb:10.6.12"
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+global:
+  nameOverride: "teletubbies-local"
+  serviceAccount:
+    name: "default"
+  db:
+    host: "teletubbies-db.database.svc.cluster.local"
+    name: "teletubbies_local_db"
+    port: 3306
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "128Mi"
+  limits:
+    cpu: "100m"
+    memory: "256Mi"

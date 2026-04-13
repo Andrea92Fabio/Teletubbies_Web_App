@@ -30,7 +30,7 @@ db:
   # Immagine da ECR
   image: 
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always
     
   pvc:
@@ -57,7 +57,7 @@ backend:
   # Immagine da ECR
   image:
     repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
-    # tag: v1.0.0
+    tag: v1.0.0
     pullPolicy: Always 
   
   resources:

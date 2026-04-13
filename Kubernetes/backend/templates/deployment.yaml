@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    {{- include "backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+
+      # Init Container: Attende il DB ed esegue lo script SQL
+      initContainers:
+      - name: initsql
+        image: {{ .Values.initDbImage | default "mariadb:10.6.12" }}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 0
+        env:
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: secret-rds
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-rds
+              key: DB_PASSWORD
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            # Attesa disponibilità del database
+            until mariadb -h {{ .Values.global.db.host }} -P {{ .Values.global.db.port | default 3306 }} -u ${DB_USER} -p${DB_PASSWORD} -e "SELECT 1;" > /dev/null 2>&1; do
+              echo "Database non ancora pronto, attesa 3 secondi..."
+              sleep 3
+            done
+            echo "Database pronto. Caricamento schema init.sql..."
+            # Esecuzione dello script SQL dalla ConfigMap
+            mariadb -h {{ .Values.global.db.host }} -P {{ .Values.global.db.port | default 3306 }} -u ${DB_USER} -p${DB_PASSWORD} {{ .Values.global.db.name }} < /schema/init.sql
+        volumeMounts:
+        - name: db-schema-migration
+          mountPath: /schema 
+
+      containers:
+      - name: backend-container
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort | default 8080 }}
+        env: 
+        - name: DB_HOST
+          value: {{ .Values.global.db.host | quote }}
+        - name: DB_PORT
+          value: {{ .Values.global.db.port | default 3306 | quote }}
+        - name: DB_NAME
+          value: {{ .Values.global.db.name | quote }}
+        - name: DB_USER 
+          valueFrom:
+            secretKeyRef:
+              name: secret-rds
+              key: DB_USER             
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-rds
+              key: DB_PASSWORD
+        
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.healthPath | default "/health" }}
+            port: {{ .Values.service.targetPort | default 8080 }}
+          initialDelaySeconds: 90
+          periodSeconds: 20
+        
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.healthPath | default "/health" }}
+            port: {{ .Values.service.targetPort | default 8080 }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+
+      volumes:
+      - name: db-schema-migration
+        configMap:
+          # Assicurati che il nome qui corrisponda alla tua ConfigMap (backend o db)
+          name: {{ include "backend.fullname" . }}-init-sql

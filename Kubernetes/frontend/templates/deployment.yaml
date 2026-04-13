@@ -1,4 +1,4 @@
-apiVersion: apps/v1 # Frontend Deployment
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "frontend.fullname" . }}
@@ -14,9 +14,7 @@ spec:
       labels:
         {{- include "frontend.selectorLabels" . | nindent 8 }}
     spec:
-      # SA
       serviceAccountName: {{ .Values.global.serviceAccount.name }}
-
       containers:
       - name: frontend-container
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -25,20 +23,15 @@ spec:
         - containerPort: {{ .Values.service.targetPort }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
-        env:
-        - name: BACKEND_SERVICE_HOST
-          value: {{ include "backend.fullname" . | quote }}
         volumeMounts:
         - name: nginx-config-volume
-          mountPath: /etc/nginx/conf.d/default.conf # Sovrascrive la config di default
-          subPath: default.conf # Deve corrispondere al path creato dal volume
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
           readOnly: true
-
-      volumes:  # <-- spostato qui, fuori dai containers
+      volumes:
       - name: nginx-config-volume
         configMap:
           name: {{ include "frontend.fullname" . }}-nginx-conf
           items:
-          - key: nginx.conf        # Chiave nel ConfigMap
-            path: default.conf     # Nome del file nel container (corrisponde a subPath)
-          defaultMode: 420         # Permessi 0644 sul file
+          - key: nginx.conf
+            path: default.conf

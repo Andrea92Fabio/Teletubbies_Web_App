@@ -1,0 +1,27 @@
+# Values-Frontend-Minikube
+replicaCount: 1
+
+image:
+  repository: teletubbies-frontend
+  tag: latest
+  pullPolicy: Never 
+
+service:
+  port: 80
+  targetPort: 80
+  type: ClusterIP
+
+# Il backend in minikube di solito ha un nome semplice
+backend:
+  serviceName: teletubbies-backend-service
+  servicePort: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "teletubbies.local" # Da aggiungere a /etc/hosts
+  backendServicePort: 8080
+
+global:
+  serviceAccount:
+    name: "default"

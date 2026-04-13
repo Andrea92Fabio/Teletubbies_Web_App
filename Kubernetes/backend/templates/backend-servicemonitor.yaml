@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "backend.fullname" . }}-monitor
+  labels:
+    release: monitor # Deve essere lo stesso nome usato per installare lo stack Prometheus
+spec:
+  selector:
+    matchLabels:
+      # Questo recupera automaticamente le etichette del tuo pod backend
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - port: http
+    path: /actuator/prometheus
+    interval: 30s

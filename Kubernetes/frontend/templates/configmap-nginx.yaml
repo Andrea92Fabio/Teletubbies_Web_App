@@ -6,7 +6,6 @@ metadata:
     {{- include "frontend.labels" . | nindent 4 }}
 data:
   nginx.conf: |
-    # Abilita la risoluzione DNS dinamica usando il DNS di Kubernetes
     resolver 127.0.0.11 valid=5s;
 
     server {
@@ -15,28 +14,20 @@ data:
         root /usr/share/nginx/html;
         index index.html;
 
-        # Gestione delle rotte SPA
         location / {
             try_files $uri $uri/ /index.html;
         }
 
-        # Reverse proxy per il backend: reindirizza tutte le chiamate a /api
         location /api {
-            
-            # Usa 'set' per creare una variabile Nginx
-            # set $backend_service_host_url "http://teletubbies-app-teletubbies-backend:{{ .Values.ingress.backendServicePort }}";
-
+            # Puntamento dinamico tramite i values del microservizio
             set $backend_service_host_url "http://{{ .Values.backend.serviceName }}:{{ .Values.backend.servicePort }}";
             
-            # proxy_pass usa la variabile Nginx.
             proxy_pass $backend_service_host_url;
-            
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
 
-        # Cache per risorse statiche (opzionale ma buona pratica)
         location ~* \.(css|js|jpg|jpeg|png|gif|ico|pdf|webp)$ {
             expires 30d;
             add_header Cache-Control "public, no-transform";

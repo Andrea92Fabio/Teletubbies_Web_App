@@ -1,0 +1,33 @@
+# values
+replicaCount: 1
+
+image:
+  repository: teletubbies-backend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+initDbImage: mariadb:10.6.12
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+global:
+  db:
+    host: teletubbies-db
+    port: 3306
+    name: teletubbies_db
+  serviceAccount:
+    name: "default"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "200m"
+    memory: "512Mi"
+
+# Percorso per i controlli di salute (Spring Boot Actuator o simili)
+healthPath: "/health"

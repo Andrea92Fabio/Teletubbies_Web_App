@@ -1,0 +1,17 @@
+global:
+  nameOverride: "teletubbies-local"
+  secret:
+    db:
+      name: "db-secret-local"
+
+db:
+  enabled: true
+  image:
+    repository: teletubbies-db
+    tag: v1.0.0
+  
+  pvc:
+    enabled: true
+    storage: 2Gi
+    accessModes: ReadWriteOnce
+    # In minikube solitamente si usa lo storageClass di default (standard)

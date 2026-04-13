@@ -1,0 +1,31 @@
+# Backend-Values-Prod-EKS
+replicaCount: 3
+
+image:
+  repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
+  tag: v1.1.0 
+  pullPolicy: Always
+
+initDbImage: "mariadb:10.6.12"
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+global:
+  nameOverride: "teletubbies-prod"
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+  db:
+    host: "decyda-dev-mariadb.c7w08masciuc.eu-south-1.rds.amazonaws.com"
+    name: "decyda_dev_db"
+    port: 3306
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "512Mi"
+  limits:
+    cpu: "400m"
+    memory: "1Gi"

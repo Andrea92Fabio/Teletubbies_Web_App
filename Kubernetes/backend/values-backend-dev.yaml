@@ -1,0 +1,31 @@
+# Backend-Values-Dev-EKS
+replicaCount: 1
+
+image:
+  repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-backend
+  tag: v1.0.0
+  pullPolicy: Always 
+
+initDbImage: "mariadb:10.6.12"
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+global:
+  nameOverride: "teletubbies-dev"
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+  db:
+    host: "teletubbies-dev-db.database.svc.cluster.local"
+    name: "teletubbies_dev_db"
+    port: 3306
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "200m"
+    memory: "512Mi"

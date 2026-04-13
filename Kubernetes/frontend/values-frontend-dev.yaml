@@ -1,0 +1,29 @@
+# Values-Frontend-Dev-EKS
+global:
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+
+replicaCount: 3
+
+image:
+  repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-frontend
+  tag: v1.0.0
+  pullPolicy: Always
+
+service:
+  port: 80
+  targetPort: 80
+  type: ClusterIP
+
+backend:
+  serviceName: teletubbies-dev-backend-service
+  servicePort: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "teletubbies.dev.decyda.com"
+  backendServicePort: 8080
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "teletubbies.dev.decyda.com"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"

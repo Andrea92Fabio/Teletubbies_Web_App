@@ -1,0 +1,28 @@
+global:
+  nameOverride: "teletubbies-dev"
+  serviceAccount:
+    name: "teletubbies-eks-deployer"
+  secret:
+    db:
+      name: "db-secret-dev"
+
+db:
+  enabled: true
+  image: 
+    repository: 089648475292.dkr.ecr.eu-south-1.amazonaws.com/teletubbies-db
+    tag: v1.0.0
+    pullPolicy: Always
+  
+  pvc:
+    enabled: true
+    storage: 5Gi
+    storageClassName: "gp2" # Fondamentale per il provisioning dinamico su AWS
+    accessModes: ReadWriteOnce
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
